@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import classnames from 'classnames';
 // reactstrap components
 import {
@@ -76,207 +77,252 @@ export default function RegisterPage() {
 			alert('Password dont match');
 		}
 	};
-	return (
-		<React.Fragment>
-			<div className="wrapper">
-				<div className="page-header">
-					<div className="content">
-						<Container>
-							<Row>
-								<Col className="offset-lg-0 offset-md-3" lg="5" md="6">
-									<div className="square square-7" id="square7" style={{ transform: squares7and8 }} />
-									<div className="square square-8" id="square8" style={{ transform: squares7and8 }} />
-									<Card className="card-register">
-										<CardHeader>
-											<CardImg
-												alt="..."
-												src={require('assets/img/square-purple-1.png').default}
-											/>
-											<CardTitle tag="h4">Register</CardTitle>
-										</CardHeader>
-										<Form className="form" onSubmit={handleSubmit}>
-											<CardBody>
-												<InputGroup
-													className={classnames({
-														'input-group-focus': fullNameFocus
-													})}
-												>
-													<InputGroupAddon addonType="prepend">
-														<InputGroupText>
-															<i className="tim-icons icon-single-02" />
-														</InputGroupText>
-													</InputGroupAddon>
-													<Input
-														placeholder="Full Name"
-														value={values.fullname}
-														onChange={(e) => {
-															setValues((values) => ({
-																...values,
-																fullname: e.target.value
-															}));
-														}}
-														type="text"
-														onFocus={(e) => setFullNameFocus(true)}
-														onBlur={(e) => setFullNameFocus(false)}
-													/>
-												</InputGroup>
-												<InputGroup
-													className={classnames({
-														'input-group-focus': emailFocus
-													})}
-												>
-													<InputGroupAddon addonType="prepend">
-														<InputGroupText>
-															<i className="tim-icons icon-email-85" />
-														</InputGroupText>
-													</InputGroupAddon>
-													<Input
-														placeholder="Email"
-														type="text"
-														value={values.email}
-														onChange={(e) => {
-															setValues((values) => ({
-																...values,
-																email: e.target.value
-															}));
-														}}
-														onFocus={(e) => setEmailFocus(true)}
-														onBlur={(e) => setEmailFocus(false)}
-													/>
-												</InputGroup>
-												<InputGroup
-													className={classnames({
-														'input-group-focus': passwordFocus
-													})}
-												>
-													<InputGroupAddon addonType="prepend">
-														<InputGroupText>
-															<i className="tim-icons icon-lock-circle" />
-														</InputGroupText>
-													</InputGroupAddon>
-													<Input
-														placeholder="Password"
-														type="password"
-														value={values.password}
-														onChange={(e) => {
-															setValues((values) => ({
-																...values,
-																password: e.target.value
-															}));
-														}}
-														onFocus={(e) => setPasswordFocus(true)}
-														onBlur={(e) => setPasswordFocus(false)}
-													/>
-												</InputGroup>
-												<InputGroup>
-													<InputGroupAddon addonType="prepend">
-														<InputGroupText>
-															<i className="tim-icons icon-lock-circle" />
-														</InputGroupText>
-													</InputGroupAddon>
-													<Input
-														placeholder="Confirm Password"
-														type="password"
-														value={values.confirmPassword}
-														onChange={(e) => {
-															setValues((values) => ({
-																...values,
-																confirmPassword: e.target.value
-															}));
-														}}
-														onFocus={(e) => setPasswordFocus(true)}
-														onBlur={(e) => setPasswordFocus(false)}
-													/>
-												</InputGroup>
+	if (localStorage.getItem('user') && localStorage.getItem('userType') === 'instructor') {
+		return <Redirect to="/instructorhome" />;
+	} else if (localStorage.getItem('user') && localStorage.getItem('userType') === 'student') {
+		return <Redirect to="/studenthome" />;
+	} else {
+		return (
+			<React.Fragment>
+				<div className="wrapper">
+					<div className="page-header">
+						<div className="content">
+							<Container>
+								<Row>
+									<Col className="offset-lg-0 offset-md-3" lg="5" md="6">
+										<div
+											className="square square-7"
+											id="square7"
+											style={{ transform: squares7and8 }}
+										/>
+										<div
+											className="square square-8"
+											id="square8"
+											style={{ transform: squares7and8 }}
+										/>
+										<Card className="card-register">
+											<CardHeader>
+												<CardImg
+													alt="..."
+													src={require('assets/img/square-purple-1.png').default}
+												/>
+												<CardTitle tag="h4">Register</CardTitle>
+											</CardHeader>
 
-												<FormGroup>
-													<Row>
-														<p className="ml-3" color="secondary">
-															Register as
-														</p>
-														<FormGroup check className="form-check-radio">
-															<Label check>
-																<Input
-																	defaultValue="option1"
-																	id="exampleRadios1"
-																	name="exampleRadios"
-																	type="radio"
-																	value="student"
-																	checked={values.userType == 'student'}
-																	onClick={(e) => {
-																		setValues((values) => ({
-																			...values,
-																			userType: 'student'
-																		}));
-																	}}
-																/>
-																<span className="form-check-sign" />
-																Student
-															</Label>
-														</FormGroup>
+											<Form className="form" onSubmit={handleSubmit}>
+												<CardBody>
+													<div className="pb-3">
+														<div className="text-muted text-center  mb-3">
+															<small>Sign up with</small>
+														</div>
+														<div className="pl-5 ml-5 mb-2">
+															<Button
+																className="btn-neutral btn-icon"
+																color="default"
+																href="#pablo"
+																onClick={(e) => {
+																	e.preventDefault();
+																	console.log('Google');
+																}}
+															>
+																<span className="btn-inner--icon">
+																	<img
+																		alt="..."
+																		src={require('assets/img/google.svg').default}
+																	/>
+																</span>
+															</Button>
+															<span className="btn-inner--text text-muted  display-4 pl-2">
+																Google
+															</span>
+														</div>
+														<div className="text-center text-muted mb-4">
+															<small>Or sign up with credentials</small>
+														</div>
+													</div>
 
-														<FormGroup check className="form-check-radio">
-															<Label check>
-																<Input
-																	defaultValue="option1"
-																	id="exampleRadios1"
-																	name="exampleRadios"
-																	type="radio"
-																	checked={values.userType == 'instructor'}
-																	onClick={(e) => {
-																		setValues((values) => ({
-																			...values,
-																			userType: 'instructor'
-																		}));
-																	}}
-																/>
-																<span className="form-check-sign" />
-																Teacher
-															</Label>
-														</FormGroup>
-													</Row>
-												</FormGroup>
-
-												<FormGroup check className="text-left">
-													<Label check>
+													<InputGroup
+														className={classnames({
+															'input-group-focus': fullNameFocus
+														})}
+													>
+														<InputGroupAddon addonType="prepend">
+															<InputGroupText>
+																<i className="tim-icons icon-single-02" />
+															</InputGroupText>
+														</InputGroupAddon>
 														<Input
-															type="checkbox"
-															onClick={(e) => setAgreeTerm(!AgreeTerm)}
+															placeholder="Full Name"
+															value={values.fullname}
+															onChange={(e) => {
+																setValues((values) => ({
+																	...values,
+																	fullname: e.target.value
+																}));
+															}}
+															type="text"
+															onFocus={(e) => setFullNameFocus(true)}
+															onBlur={(e) => setFullNameFocus(false)}
 														/>
-														<span className="form-check-sign" />I agree to the{' '}
-														<a href="#pablo" onClick={(e) => e.preventDefault()}>
-															Terms and conditions
-														</a>
-														.
-													</Label>
-												</FormGroup>
-											</CardBody>
-											<CardFooter>
-												<Button
-													disabled={AgreeTerm}
-													className="btn-round"
-													color="primary"
-													size="lg"
-													type="submit"
-												>
-													Sign Up
-												</Button>
-											</CardFooter>
-										</Form>
-									</Card>
-								</Col>
-							</Row>
-							<div className="register-bg" />
-							<div className="square square-1" id="square1" style={{ transform: squares1to6 }} />
-							<div className="square square-2" id="square2" style={{ transform: squares1to6 }} />
-							<div className="square square-3" id="square3" style={{ transform: squares1to6 }} />
-							<div className="square square-4" id="square4" style={{ transform: squares1to6 }} />
-							<div className="square square-5" id="square5" style={{ transform: squares1to6 }} />
-							<div className="square square-6" id="square6" style={{ transform: squares1to6 }} />
-						</Container>
+													</InputGroup>
+													<InputGroup
+														className={classnames({
+															'input-group-focus': emailFocus
+														})}
+													>
+														<InputGroupAddon addonType="prepend">
+															<InputGroupText>
+																<i className="tim-icons icon-email-85" />
+															</InputGroupText>
+														</InputGroupAddon>
+														<Input
+															placeholder="Email"
+															type="text"
+															value={values.email}
+															onChange={(e) => {
+																setValues((values) => ({
+																	...values,
+																	email: e.target.value
+																}));
+															}}
+															onFocus={(e) => setEmailFocus(true)}
+															onBlur={(e) => setEmailFocus(false)}
+														/>
+													</InputGroup>
+													<InputGroup
+														className={classnames({
+															'input-group-focus': passwordFocus
+														})}
+													>
+														<InputGroupAddon addonType="prepend">
+															<InputGroupText>
+																<i className="tim-icons icon-lock-circle" />
+															</InputGroupText>
+														</InputGroupAddon>
+														<Input
+															placeholder="Password"
+															type="password"
+															value={values.password}
+															onChange={(e) => {
+																setValues((values) => ({
+																	...values,
+																	password: e.target.value
+																}));
+															}}
+															onFocus={(e) => setPasswordFocus(true)}
+															onBlur={(e) => setPasswordFocus(false)}
+														/>
+													</InputGroup>
+													<InputGroup>
+														<InputGroupAddon addonType="prepend">
+															<InputGroupText>
+																<i className="tim-icons icon-lock-circle" />
+															</InputGroupText>
+														</InputGroupAddon>
+														<Input
+															placeholder="Confirm Password"
+															type="password"
+															value={values.confirmPassword}
+															onChange={(e) => {
+																setValues((values) => ({
+																	...values,
+																	confirmPassword: e.target.value
+																}));
+															}}
+															onFocus={(e) => setPasswordFocus(true)}
+															onBlur={(e) => setPasswordFocus(false)}
+														/>
+													</InputGroup>
+
+													<FormGroup>
+														<Row>
+															<p className="ml-3" color="secondary">
+																Register as
+															</p>
+															<FormGroup check className="form-check-radio">
+																<Label check>
+																	<Input
+																		defaultValue="option1"
+																		id="exampleRadios1"
+																		name="exampleRadios"
+																		type="radio"
+																		value="student"
+																		checked={values.userType == 'student'}
+																		onClick={(e) => {
+																			setValues((values) => ({
+																				...values,
+																				userType: 'student'
+																			}));
+																		}}
+																	/>
+																	<span className="form-check-sign" />
+																	Student
+																</Label>
+															</FormGroup>
+
+															<FormGroup check className="form-check-radio">
+																<Label check>
+																	<Input
+																		defaultValue="option1"
+																		id="exampleRadios1"
+																		name="exampleRadios"
+																		type="radio"
+																		checked={values.userType === 'instructor'}
+																		onClick={(e) => {
+																			setValues((values) => ({
+																				...values,
+																				userType: 'instructor'
+																			}));
+																		}}
+																	/>
+																	<span className="form-check-sign" />
+																	Teacher
+																</Label>
+															</FormGroup>
+														</Row>
+													</FormGroup>
+
+													<FormGroup check className="text-left">
+														<Label check>
+															<Input
+																type="checkbox"
+																onClick={(e) => setAgreeTerm(!AgreeTerm)}
+															/>
+															<span className="form-check-sign" />I agree to the{' '}
+															<a href="#pablo" onClick={(e) => e.preventDefault()}>
+																Terms and conditions
+															</a>
+															.
+														</Label>
+													</FormGroup>
+												</CardBody>
+												<CardFooter>
+													<Button
+														disabled={AgreeTerm}
+														className="btn-round"
+														color="primary"
+														size="lg"
+														type="submit"
+													>
+														Sign Up
+													</Button>
+												</CardFooter>
+											</Form>
+										</Card>
+									</Col>
+								</Row>
+								<div className="register-bg" />
+								<div className="square square-1" id="square1" style={{ transform: squares1to6 }} />
+								<div className="square square-2" id="square2" style={{ transform: squares1to6 }} />
+								<div className="square square-3" id="square3" style={{ transform: squares1to6 }} />
+								<div className="square square-4" id="square4" style={{ transform: squares1to6 }} />
+								<div className="square square-5" id="square5" style={{ transform: squares1to6 }} />
+								<div className="square square-6" id="square6" style={{ transform: squares1to6 }} />
+							</Container>
+						</div>
 					</div>
 				</div>
-			</div>
-		</React.Fragment>
-	);
+			</React.Fragment>
+		);
+	}
 }

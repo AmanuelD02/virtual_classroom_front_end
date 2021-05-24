@@ -16,6 +16,9 @@ import RegisterPage from './components/auth/RegisterPage';
 import LoginPage from './components/auth/LoginPage';
 import StudentHome from './components/student/StudentHome';
 import InstructorHome from './components/instructor/InstructorHome';
+import CourseDetailInstructor from './components/instructor/courseDetail';
+import CreateClass from './components/instructor/CreateClass';
+import CourseDetailStudent from './components/student/courseDetail';
 
 ReactDOM.render(
 	<BrowserRouter>
@@ -26,7 +29,11 @@ ReactDOM.render(
 			<Route path="/register" render={(props) => <RegisterPage {...props} />} />
 			<Route path="/login" render={(props) => <LoginPage {...props} />} />
 			<ProtectedStudentRoute exact path="/studenthome" component={StudentHome} />
+			<ProtectedStudentRoute exact path="/studentCourse" component={CourseDetailStudent} />
+
 			<ProtectedInstructorRoute exact path="/instructorhome" component={InstructorHome} />
+			<ProtectedInstructorRoute exact path="/instructorCourse" component={CourseDetailInstructor} />
+			<ProtectedInstructorRoute exact path="/CreateClass" component={CreateClass} />
 
 			<Redirect to="/" />
 		</Switch>

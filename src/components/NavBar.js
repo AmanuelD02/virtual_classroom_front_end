@@ -43,7 +43,7 @@ function authCheck() {
 		return (
 			<React.Fragment>
 				<NavItem className="p-0">
-					<Button className="nav-link d-none d-lg-block" color="primary" href="/login">
+					<Button className="nav-link d-none d-lg-block" color="primary" href="/CreateClass">
 						Create Class
 					</Button>
 				</NavItem>
