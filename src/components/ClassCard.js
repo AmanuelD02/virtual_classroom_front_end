@@ -16,7 +16,9 @@ function ClassCard(props) {
 					{props.instructor}
 				</CardSubtitle>
 				<CardText>{props.description}</CardText>
-				<Button color="default">Open</Button>
+				<Button color="default" href={`/course/${props.id}`}>
+					Open
+				</Button>
 			</CardBody>
 		</Card>
 	);

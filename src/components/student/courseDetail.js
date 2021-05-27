@@ -18,12 +18,11 @@ import {
 	TabPane,
 	Container,
 	Row,
-	ListGroupItem,
-	ListGroup,
 	Col
 } from 'reactstrap';
 
 import '../../assets/css/courseDetail.css';
+import { useParams } from 'react-router';
 
 // core components
 
@@ -47,7 +46,9 @@ let resourceList = [
 	}
 ];
 
-export default function CourseDetailStudent() {
+export default function CourseDetailStudent(props) {
+	let { id } = useParams();
+
 	const [ tabs, setTabs ] = React.useState(1);
 
 	React.useEffect(() => {
@@ -72,6 +73,7 @@ export default function CourseDetailStudent() {
 	}, []);
 	return (
 		<React.Fragment>
+			{console.log(id)}
 			<div className="wrapper">
 				<div className="page-header">
 					<img alt="..." className="dots" src={require('assets/img/dots.png').default} />

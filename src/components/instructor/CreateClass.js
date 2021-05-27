@@ -1,14 +1,17 @@
 import React from 'react';
-import { FormGroup, Form, Input, Row, Col, Container, Card, CardBody, CardFooter, Button } from 'reactstrap';
+import { FormGroup, Form, Input, Row, Col, Container, Card, CardBody, CardFooter, Button, Label } from 'reactstrap';
 import '../../assets/css/createCourse.css';
+import { FaPlus } from 'react-icons/fa';
 function CreateClass() {
 	return (
 		<React.Fragment>
 			<div className="wrapper">
 				<div className="page-header">
+					<img alt="..." className="dots" src={require('assets/img/dots.png').default} />
+					<img alt="..." className="path" src={require('assets/img/path4.png').default} />
 					<div className="content">
 						<Container>
-							<Card className="card-register ">
+							<Card className="card-register">
 								<Form>
 									<CardBody>
 										<div className="pl-lg-4 pb-3">
@@ -40,6 +43,16 @@ function CreateClass() {
 															rows="4"
 															type="textarea"
 														/>
+													</FormGroup>
+												</Col>
+											</Row>
+											<Row className="pb-3">
+												<Col sm="9">
+													<FormGroup className="border">
+														<label className="form-control-label" htmlFor="input-students">
+															Add Students
+														</label>
+														<Input type="file" name="file" accept=".xlsx" width="50%" />
 													</FormGroup>
 												</Col>
 											</Row>

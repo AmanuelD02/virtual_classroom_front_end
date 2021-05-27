@@ -19,22 +19,23 @@ import InstructorHome from './components/instructor/InstructorHome';
 import CourseDetailInstructor from './components/instructor/courseDetail';
 import CreateClass from './components/instructor/CreateClass';
 import CourseDetailStudent from './components/student/courseDetail';
+import CourseDetail from './components/courseDetail';
 
 ReactDOM.render(
 	<BrowserRouter>
 		<NavBar />
 		<Switch>
 			<Route path="/" exact render={(props) => <App {...props} />} />
-
 			<Route path="/register" render={(props) => <RegisterPage {...props} />} />
 			<Route path="/login" render={(props) => <LoginPage {...props} />} />
+			<Route path="/course/:id" render={(props) => <CourseDetail {...props} />} />
+			{/* Student Routes */}
 			<ProtectedStudentRoute exact path="/studenthome" component={StudentHome} />
-			<ProtectedStudentRoute exact path="/studentCourse" component={CourseDetailStudent} />
-
+			<ProtectedStudentRoute exact path="/studentCourse/:id" component={CourseDetailStudent} />
+			{/* Insttuctor Routes */}
 			<ProtectedInstructorRoute exact path="/instructorhome" component={InstructorHome} />
-			<ProtectedInstructorRoute exact path="/instructorCourse" component={CourseDetailInstructor} />
+			<ProtectedInstructorRoute exact path="/instructorCourse/:id" component={CourseDetailInstructor} />
 			<ProtectedInstructorRoute exact path="/CreateClass" component={CreateClass} />
-
 			<Redirect to="/" />
 		</Switch>
 	</BrowserRouter>,

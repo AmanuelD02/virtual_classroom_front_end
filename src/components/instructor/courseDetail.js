@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import classnames from 'classnames';
-import DateTimePicker from 'react-datetime-picker';
-
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import TimeKeeper from 'react-timekeeper';
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from 'perfect-scrollbar';
 import { FaTrashAlt, FaPlus } from 'react-icons/fa';
@@ -30,6 +31,7 @@ import {
 } from 'reactstrap';
 
 import '../../assets/css/courseDetail.css';
+import { useParams } from 'react-router';
 
 // core components
 
@@ -71,13 +73,23 @@ let studentList = [
 	}
 ];
 
-export default function CourseDetailInstructor() {
+export default function CourseDetailInstructor(props) {
+	let { id } = useParams();
+
+	const [ startDate, setStartDate ] = useState(null);
+	const [ StartTime, setStartTime ] = useState('12:00am');
+	const [ showStartTime, setShowStartTime ] = useState(false);
+
+	const [ EndTime, setEndTime ] = useState('1:00pm');
+	const [ showEndTime, setShowEndTime ] = useState(false);
+
 	const [ tabs, setTabs ] = React.useState(1);
 	const [ DemoModal, setDemoModal ] = React.useState(false);
 	const [ DeleteStudent, setDeleteStudent ] = React.useState(0);
 	const [ DeleteModal, setDeleteModal ] = React.useState(false);
-	const [ VirtualClassSchedule, setVirtualClassSchedule ] = React.useState(new Date());
+
 	React.useEffect(() => {
+		console.log(`Course Detail is${id}`);
 		if (navigator.platform.indexOf('Win') > -1) {
 			document.documentElement.className += ' perfect-scrollbar-on';
 			document.documentElement.classList.remove('perfect-scrollbar-off');
@@ -169,12 +181,46 @@ export default function CourseDetailInstructor() {
 															<tr>
 																<th className="header">New Virtual Class</th>
 																<th>
-																	<DateTimePicker
-																		className="bg-white"
+																	<DatePicker
+																		selected={startDate}
+																		onChange={(date) => setStartDate(date)}
 																		minDate={new Date()}
-																		onChange={setVirtualClassSchedule}
-																		value={VirtualClassSchedule}
+																		className="bg-secondary text-black"
+																		placeholderText="Date"
 																	/>
+																</th>
+
+																<th>
+																	{showStartTime && (
+																		<TimeKeeper
+																			time={StartTime}
+																			onChange={(newTime) =>
+																				setStartTime(newTime.formatted12)}
+																			onDoneClick={() => setShowStartTime(false)}
+																			switchToMinuteOnHourSelect
+																		/>
+																	)}
+																	{!showStartTime && (
+																		<button onClick={() => setShowStartTime(true)}>
+																			{StartTime}
+																		</button>
+																	)}
+																</th>
+																<th>
+																	{showEndTime && (
+																		<TimeKeeper
+																			time={EndTime}
+																			onChange={(newTime) =>
+																				setEndTime(newTime.formatted12)}
+																			onDoneClick={() => setShowEndTime(false)}
+																			switchToMinuteOnHourSelect
+																		/>
+																	)}
+																	{!showEndTime && (
+																		<button onClick={() => setShowEndTime(true)}>
+																			{EndTime}
+																		</button>
+																	)}
 																</th>
 																<th>
 																	<Button
@@ -312,8 +358,8 @@ export default function CourseDetailInstructor() {
 															{studentList.map((st) => {
 																return (
 																	<tr key={st.id}>
+																		<td>{st.name} </td>
 																		<td>
-																			{st.name}{' '}
 																			<ImCross
 																				color="red"
 																				onClick={(e) => {

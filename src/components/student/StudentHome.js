@@ -56,6 +56,7 @@ function studentHome() {
 									return (
 										<Col md="4" key={card.id}>
 											<ClassCard
+												id={card.id}
 												title={card.title}
 												instructor={card.instructor}
 												description={card.description}
