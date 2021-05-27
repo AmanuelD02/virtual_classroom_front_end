@@ -1,6 +1,5 @@
 # How to Start
 1. clone this Repo
 2. Inside the Directory <br>
-     ``` yarn install ```
-
-     ``` yarn start ```
+Run     ``` yarn install ``` <br>
+To start the Program     ``` yarn start ```
