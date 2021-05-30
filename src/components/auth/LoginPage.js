@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
+import axios from '../../axios';
 
 import classnames from 'classnames';
 // reactstrap components
@@ -57,30 +58,29 @@ export default function RegisterPage() {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		if (values.email === 'amanuel@gmail.com' && values.password === '123') {
-			console.log(values);
+		axios
+			.post('authenticate', {
+				userName: values.email,
+				password: values.password
+			})
+			.then((res) => {
+				return res.data;
+			})
+			.then((res) => {
+				localStorage.setItem('REACT_TOKEN_AUTH', res.token);
+				if (res.role === 'Student') {
+					localStorage.setItem('user', res.id);
+					localStorage.setItem('userType', 'student');
 
-			localStorage.setItem('user', values.email);
-			localStorage.setItem('userType', 'instructor');
+					history.push('/studenthome');
+				} else {
+					localStorage.setItem('user', res.id);
 
-			setValues({
-				email: '',
-				password: ''
+					localStorage.setItem('userType', 'instructor');
+
+					history.push('/instructorhome');
+				}
 			});
-
-			history.push('/instructorhome');
-		} else if (values.email === 'aman@gmail.com' && values.password === '12') {
-			console.log(values);
-
-			localStorage.setItem('user', values.email);
-			localStorage.setItem('userType', 'student');
-
-			setValues({
-				email: '',
-				password: ''
-			});
-			history.push('/studenthome');
-		}
 	};
 	if (localStorage.getItem('user') && localStorage.getItem('userType') === 'instructor') {
 		return <Redirect to="/instructorhome" />;

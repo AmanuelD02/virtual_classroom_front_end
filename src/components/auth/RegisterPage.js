@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import classnames from 'classnames';
+import axios from '../../axios';
 // reactstrap components
 import {
 	Button,
@@ -22,23 +23,48 @@ import {
 	Col
 } from 'reactstrap';
 
+const validate = (values) => {
+	let errors = {};
+	const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+	if (!values.email) {
+		errors.email = 'Email is Required';
+	} else if (!regex.test(values.email)) {
+		errors.email = 'Invalid email format';
+	}
+
+	if (!values.password) {
+		errors.password = 'Cannot be blank';
+	} else if (values.password.length < 3) {
+		errors.password = 'Password must be more than 3 characters';
+	}
+	if (values.password !== values.confirmPassword) {
+		errors.confirmPassword = 'Password Must Match ';
+	}
+
+	return errors;
+};
+
 export default function RegisterPage() {
 	const [ squares1to6, setSquares1to6 ] = React.useState('');
 	const [ squares7and8, setSquares7and8 ] = React.useState('');
-	const [ fullNameFocus, setFullNameFocus ] = React.useState(false);
+	const [ fNameFocus, setFNameFocus ] = React.useState(false);
+	const [ lNameFocus, setLNameFocus ] = React.useState(false);
 	const [ emailFocus, setEmailFocus ] = React.useState(false);
 	const [ passwordFocus, setPasswordFocus ] = React.useState(false);
 
 	//  Login Input Hooks
 	const [ values, setValues ] = useState({
-		fullname: '',
-
+		fname: '',
+		lname: '',
 		email: '',
 		password: '',
 		confirmPassword: '',
 		userType: 'student'
 	});
 	const [ AgreeTerm, setAgreeTerm ] = useState(true);
+	// Validations
+	const [ formErrors, setFormErrors ] = useState({});
 
 	React.useEffect(() => {
 		document.body.classList.toggle('register-page');
@@ -61,9 +87,42 @@ export default function RegisterPage() {
 
 		if (values.confirmPassword === values.password) {
 			console.log(values);
+			if (values.userType === 'student') {
+				axios
+					.post('authenticate/Students/CreateStudent', {
+						firstName: values.fname,
+						lastName: values.lname,
+						email: values.email,
+						password: values.password
+					})
+					.then((res) => {
+						console.log('Student');
+						console.log(res);
+					})
+					.catch((e) => {
+						console.log('ERROR');
+						console.log(e);
+					});
+			} else {
+				axios
+					.post('authenticate/Instructor/CreateInstructor', {
+						firstName: values.fname,
+						lastName: values.lname,
+						email: values.email,
+						password: values.password
+					})
+					.then((res) => {
+						console.log('Teacher:');
+						console.log(res);
+					})
+					.catch((e) => {
+						console.log('ERROR');
+						console.log(e);
+					});
+			}
 			setValues({
-				fullname: '',
-
+				fname: '',
+				lname: '',
 				email: '',
 				password: '',
 				confirmPassword: ''
@@ -77,6 +136,12 @@ export default function RegisterPage() {
 			alert('Password dont match');
 		}
 	};
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		console.log(name + '  ' + value);
+		setValues({ ...values, [name]: value });
+	};
+
 	if (localStorage.getItem('user') && localStorage.getItem('userType') === 'instructor') {
 		return <Redirect to="/instructorhome" />;
 	} else if (localStorage.getItem('user') && localStorage.getItem('userType') === 'student') {
@@ -143,7 +208,7 @@ export default function RegisterPage() {
 
 													<InputGroup
 														className={classnames({
-															'input-group-focus': fullNameFocus
+															'input-group-focus': fNameFocus
 														})}
 													>
 														<InputGroupAddon addonType="prepend">
@@ -152,17 +217,38 @@ export default function RegisterPage() {
 															</InputGroupText>
 														</InputGroupAddon>
 														<Input
-															placeholder="Full Name"
-															value={values.fullname}
-															onChange={(e) => {
-																setValues((values) => ({
-																	...values,
-																	fullname: e.target.value
-																}));
-															}}
+															placeholder="First Name"
+															type="fname"
+															name="fname"
+															id="fname"
+															value={values.fname}
+															onChange={handleChange}
 															type="text"
-															onFocus={(e) => setFullNameFocus(true)}
-															onBlur={(e) => setFullNameFocus(false)}
+															onFocus={(e) => setFNameFocus(true)}
+															onBlur={(e) => setFNameFocus(false)}
+														/>
+													</InputGroup>
+
+													<InputGroup
+														className={classnames({
+															'input-group-focus': lNameFocus
+														})}
+													>
+														<InputGroupAddon addonType="prepend">
+															<InputGroupText>
+																<i className="tim-icons icon-single-02" />
+															</InputGroupText>
+														</InputGroupAddon>
+														<Input
+															placeholder="Last Name"
+															type="lname"
+															name="lname"
+															id="lname"
+															type="text"
+															value={values.lname}
+															onChange={handleChange}
+															onFocus={(e) => setLNameFocus(true)}
+															onBlur={(e) => setLNameFocus(false)}
 														/>
 													</InputGroup>
 													<InputGroup
@@ -202,13 +288,10 @@ export default function RegisterPage() {
 														<Input
 															placeholder="Password"
 															type="password"
+															name="password"
+															id="password"
 															value={values.password}
-															onChange={(e) => {
-																setValues((values) => ({
-																	...values,
-																	password: e.target.value
-																}));
-															}}
+															onChange={handleChange}
 															onFocus={(e) => setPasswordFocus(true)}
 															onBlur={(e) => setPasswordFocus(false)}
 														/>
@@ -221,16 +304,11 @@ export default function RegisterPage() {
 														</InputGroupAddon>
 														<Input
 															placeholder="Confirm Password"
+															name="confirmPassword"
+															id="confirmPassword"
 															type="password"
 															value={values.confirmPassword}
-															onChange={(e) => {
-																setValues((values) => ({
-																	...values,
-																	confirmPassword: e.target.value
-																}));
-															}}
-															onFocus={(e) => setPasswordFocus(true)}
-															onBlur={(e) => setPasswordFocus(false)}
+															onChange={handleChange}
 														/>
 													</InputGroup>
 
@@ -247,7 +325,7 @@ export default function RegisterPage() {
 																		name="exampleRadios"
 																		type="radio"
 																		value="student"
-																		checked={values.userType == 'student'}
+																		checked={values.userType === 'student'}
 																		onClick={(e) => {
 																			setValues((values) => ({
 																				...values,

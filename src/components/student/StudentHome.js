@@ -1,47 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'reactstrap';
 import ClassCard from '../ClassCard';
+import axios from '../../axios';
 
-const sampleData = [
-	{
-		id: 1,
-		title: 'Web Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'HTML5/CSS3/JS'
-	},
-	{
-		id: 2,
-		title: 'Mobile Programming',
-		instructor: 'Amanuel Negash',
-		description: 'Android with Kotlin'
-	},
-	{
-		id: 3,
-		title: 'Networking',
-		instructor: 'Dr. Seleshi',
-		description: 'Networking '
-	},
-	{
-		id: 4,
-		title: 'Web Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'HTML5/CSS3/JS'
-	},
-	{
-		id: 5,
-		title: 'Mobile Programming',
-		instructor: 'Amanuel Negash',
-		description: 'Android with Kotlin'
-	},
-	{
-		id: 6,
-		title: 'Networking',
-		instructor: 'Dr. Seleshi',
-		description: 'Networking '
-	}
-];
+function StudentHome() {
+	const [ courses, setCourses ] = useState([]);
+	const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
 
-function studentHome() {
+	useEffect(() => {
+		async function fetchData() {
+			const request = await axios.get('Course/studentCourses');
+
+			console.log('REQuest');
+			console.log(request);
+			setCourses(request.data.results);
+
+			return request;
+		}
+		console.log('token');
+		console.log(token);
+		fetchData();
+	}, []);
 	return (
 		<React.Fragment>
 			<div className="wrapper">
@@ -52,7 +31,7 @@ function studentHome() {
 						</div>
 						<Container>
 							<Row>
-								{sampleData.map((card) => {
+								{courses.map((card) => {
 									return (
 										<Col md="4" key={card.id}>
 											<ClassCard
@@ -73,4 +52,4 @@ function studentHome() {
 	);
 }
 
-export default studentHome;
+export default StudentHome;

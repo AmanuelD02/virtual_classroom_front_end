@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import classnames from 'classnames';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -7,6 +7,9 @@ import TimeKeeper from 'react-timekeeper';
 import PerfectScrollbar from 'perfect-scrollbar';
 import { FaTrashAlt, FaPlus } from 'react-icons/fa';
 import { ImCross } from 'react-icons/im';
+
+import axios from '../../axios';
+
 // reactstrap components
 import {
 	Button,
@@ -14,6 +17,7 @@ import {
 	CardHeader,
 	CardBody,
 	Label,
+	Form,
 	FormGroup,
 	Input,
 	NavItem,
@@ -37,44 +41,80 @@ import { useParams } from 'react-router';
 
 let ps = null;
 
-let resourceList = [
-	{
-		id: 1,
-		filename: 'C# Essentials',
-		downloadLink: ''
-	},
-	{
-		id: 2,
-		filename: 'Intorduction to C#',
-		downloadLink: ''
-	},
-	{
-		id: 3,
-		filename: 'Advanced C# ',
-		downloadLink: ''
-	}
-];
-let studentList = [
-	{
-		id: 1,
-		name: 'Amanuel Debebe'
-	},
-	{
-		id: 2,
-		name: 'Boni abiy'
-	},
-	{
-		id: 3,
-		name: 'Abdi Dedgeba'
-	},
-	{
-		id: 4,
-		name: 'Aymen'
-	}
-];
-
 export default function CourseDetailInstructor(props) {
 	let { id } = useParams();
+	const [ courseInfo, setCourseInfo ] = useState({});
+	const [ studentList, setStudentList ] = useState([]);
+	const [ resourceList, setResourceList ] = useState([
+		{
+			id: 1,
+			filename: 'C# Essentials',
+			downloadLink: ''
+		}
+	]);
+	const [ classRoomList, setClassRoomList ] = useState([]);
+
+	useEffect(
+		() => {
+			async function fetchData() {
+				const request = await axios.get(`Course/${id}`);
+				console.log('token ' + localStorage.getItem('REACT_TOKEN_AUTH'));
+				setCourseInfo(request.data);
+
+				return request;
+			}
+
+			fetchData();
+		},
+		[ id ]
+	);
+
+	useEffect(
+		() => {
+			async function fetchData() {
+				const request = await axios.get(`Course/${id}/Students`);
+				setStudentList(request.data);
+				return request;
+			}
+			fetchData();
+		},
+		[ id ]
+	);
+
+	// useEffect(
+	// 	() => {
+	// 		async function fetchData() {
+	// 			const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
+	// 			const request = await Axios.get(`http://localhost:51044/api/Courses​/${id}​/Resources`, {
+	// 				headers: {
+	// 					responseType: 'blob',
+	// 					Authorization: `Bearer ${token}`
+	// 				}
+	// 			});
+
+	// 			console.log('ReQuest Resources');
+	// 			console.log(request);
+	// 			setResourceList(request.data);
+	// 			return request;
+	// 		}
+	// 		fetchData();
+	// 	},
+	// 	[ id ]
+	// );
+
+	useEffect(
+		() => {
+			async function fetchData() {
+				const request = await axios.get(`Courses/${id}/Classrooms`);
+				console.log('ReQuest');
+				console.log(request.data);
+				setClassRoomList(request.data);
+				return request;
+			}
+			fetchData();
+		},
+		[ id ]
+	);
 
 	const [ startDate, setStartDate ] = useState(null);
 	const [ StartTime, setStartTime ] = useState('12:00am');
@@ -87,9 +127,20 @@ export default function CourseDetailInstructor(props) {
 	const [ DemoModal, setDemoModal ] = React.useState(false);
 	const [ DeleteStudent, setDeleteStudent ] = React.useState(0);
 	const [ DeleteModal, setDeleteModal ] = React.useState(false);
+	const [ addVirtualClassRoom, setAddVirtualClassRoom ] = React.useState(false);
+
+	const [ studentEmail, setStudentEmail ] = useState('');
+
+	function AddStudent(e) {
+		e.preventDefault();
+
+		// axios.post(`Course/${id}`, {
+		// 	studentId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+		// 	courseId: id
+		// });
+	}
 
 	React.useEffect(() => {
-		console.log(`Course Detail is${id}`);
 		if (navigator.platform.indexOf('Win') > -1) {
 			document.documentElement.className += ' perfect-scrollbar-on';
 			document.documentElement.classList.remove('perfect-scrollbar-off');
@@ -109,6 +160,7 @@ export default function CourseDetailInstructor(props) {
 			document.body.classList.toggle('profile-page');
 		};
 	}, []);
+
 	return (
 		<React.Fragment>
 			<div className="wrapper">
@@ -118,13 +170,9 @@ export default function CourseDetailInstructor(props) {
 					<Container className="align-items-center">
 						<Row>
 							<Col lg="6" md="6">
-								<h1 className="profile-title text-left">Mike Scheinder</h1>
+								<h1 className="profile-title text-left">{courseInfo.title}</h1>
 
-								<p className="profile-description">
-									Offices parties lasting outward nothing age few resolve. Impression to discretion
-									understood to we interested he excellence. Him remarkably use projection collecting.
-									Going about eat forty world has round miles.
-								</p>
+								<p className="profile-description">{courseInfo.description}</p>
 							</Col>
 							<Col className="ml-auto mr-auto" lg="4" md="6">
 								<Card className="card-coin card-plain" style={{ width: '38rem' }}>
@@ -180,53 +228,15 @@ export default function CourseDetailInstructor(props) {
 														<thead className="text-primary">
 															<tr>
 																<th className="header">New Virtual Class</th>
-																<th>
-																	<DatePicker
-																		selected={startDate}
-																		onChange={(date) => setStartDate(date)}
-																		minDate={new Date()}
-																		className="bg-secondary text-black"
-																		placeholderText="Date"
-																	/>
-																</th>
 
 																<th>
-																	{showStartTime && (
-																		<TimeKeeper
-																			time={StartTime}
-																			onChange={(newTime) =>
-																				setStartTime(newTime.formatted12)}
-																			onDoneClick={() => setShowStartTime(false)}
-																			switchToMinuteOnHourSelect
-																		/>
-																	)}
-																	{!showStartTime && (
-																		<button onClick={() => setShowStartTime(true)}>
-																			{StartTime}
-																		</button>
-																	)}
-																</th>
-																<th>
-																	{showEndTime && (
-																		<TimeKeeper
-																			time={EndTime}
-																			onChange={(newTime) =>
-																				setEndTime(newTime.formatted12)}
-																			onDoneClick={() => setShowEndTime(false)}
-																			switchToMinuteOnHourSelect
-																		/>
-																	)}
-																	{!showEndTime && (
-																		<button onClick={() => setShowEndTime(true)}>
-																			{EndTime}
-																		</button>
-																	)}
-																</th>
-																<th>
 																	<Button
-																		className="btn-simple btn-icon btn-round float-right"
+																		className="btn-simple btn-icon btn-round "
 																		color="primary"
 																		type="submit"
+																		onClick={(e) => {
+																			setAddVirtualClassRoom(true);
+																		}}
 																	>
 																		<FaPlus />
 																	</Button>
@@ -329,22 +339,29 @@ export default function CourseDetailInstructor(props) {
 												</div>
 											</TabPane>
 											<TabPane tabId="tab2">
-												<Row className="pb-3">
-													<Label sm="3">Email</Label>
-													<Col sm="9">
-														<FormGroup>
-															<Input placeholder="e.g. sample@gmail.com" type="email" />
-														</FormGroup>
-													</Col>
-												</Row>
+												<Form onSubmit={AddStudent}>
+													<Row className="pb-3">
+														<Label sm="3">Email</Label>
+														<Col sm="9">
+															<FormGroup>
+																<Input
+																	placeholder="e.g. sample@gmail.com"
+																	type="email"
+																	value={studentEmail}
+																	onChange={(e) => setStudentEmail(e.target.value)}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
 
-												<Button
-													className="btn-simple btn-icon btn-round float-right"
-													color="primary"
-													type="submit"
-												>
-													<FaPlus />
-												</Button>
+													<Button
+														className="btn-simple btn-icon btn-round float-right"
+														color="primary"
+														type="submit"
+													>
+														<FaPlus />
+													</Button>
+												</Form>
 											</TabPane>
 											<TabPane tabId="tab3">
 												<div class="table-wrapper-scroll-y my-custom-scrollbar">
@@ -454,6 +471,91 @@ export default function CourseDetailInstructor(props) {
 							</Button>
 							<Button color="default" type="button" onClick={() => setDeleteModal(false)}>
 								NO
+							</Button>
+						</div>
+					</Modal>
+
+					<Modal isOpen={addVirtualClassRoom} toggle={() => setAddVirtualClassRoom(false)}>
+						<div className="modal-header justify-content-center">
+							<button className="close" onClick={() => setAddVirtualClassRoom(false)}>
+								<i className="tim-icons icon-simple-remove" />
+							</button>
+							<h4 className="title title-up">Add Virtual ClassRoom</h4>
+						</div>
+						<div className="modal-body">
+							<Container>
+								<Row>
+									<Col>
+										<p>Select Date</p>
+									</Col>
+									<Col>
+										<DatePicker
+											selected={startDate}
+											onChange={(date) => setStartDate(date)}
+											minDate={new Date()}
+											className="bg-secondary text-black"
+											placeholderText="Date"
+										/>
+									</Col>
+								</Row>
+								<Row>
+									<Col>
+										<p>Select Starting Time: </p>
+									</Col>
+									<Col>
+										{showStartTime && (
+											<TimeKeeper
+												time={StartTime}
+												onChange={(newTime) => setStartTime(newTime.formatted12)}
+												onDoneClick={() => setShowStartTime(false)}
+												switchToMinuteOnHourSelect
+											/>
+										)}
+										{!showStartTime && (
+											<button onClick={() => setShowStartTime(true)}>{StartTime}</button>
+										)}
+									</Col>
+								</Row>
+								<Row>
+									<Col>
+										<p>Select Ending Time: </p>
+									</Col>
+
+									<Col>
+										{showEndTime && (
+											<TimeKeeper
+												time={EndTime}
+												onChange={(newTime) => setEndTime(newTime.formatted12)}
+												onDoneClick={() => setShowEndTime(false)}
+												switchToMinuteOnHourSelect
+											/>
+										)}
+										{!showEndTime && (
+											<button onClick={() => setShowEndTime(true)}>{EndTime}</button>
+										)}
+									</Col>
+								</Row>
+								<Row>
+									<Col>
+										<Button
+											className="btn-simple btn-icon btn-round float-right"
+											color="success"
+											type="submit"
+										>
+											<FaPlus />
+										</Button>
+									</Col>
+								</Row>
+							</Container>
+						</div>
+						<div className="modal-footer float-right">
+							<Button
+								color="danger"
+								className="float-right"
+								type="button"
+								onClick={() => setAddVirtualClassRoom(false)}
+							>
+								Cancel
 							</Button>
 						</div>
 					</Modal>

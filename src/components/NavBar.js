@@ -24,6 +24,7 @@ import { FaSignOutAlt } from 'react-icons/fa';
 const logout = () => {
 	localStorage.removeItem('user');
 	localStorage.removeItem('userType');
+	localStorage.removeItem('REACT_TOKEN_AUTH');
 };
 
 function authCheck() {
