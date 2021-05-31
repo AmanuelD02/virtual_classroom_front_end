@@ -20,6 +20,7 @@ import CourseDetailInstructor from './components/instructor/courseDetail';
 import CreateClass from './components/instructor/CreateClass';
 import CourseDetailStudent from './components/student/courseDetail';
 import CourseDetail from './components/courseDetail';
+import VirtualClassroom from './components/classroom/VirtualClass'
 
 ReactDOM.render(
 	<BrowserRouter>
@@ -29,6 +30,7 @@ ReactDOM.render(
 			<Route path="/register" render={(props) => <RegisterPage {...props} />} />
 			<Route path="/login" render={(props) => <LoginPage {...props} />} />
 			<Route path="/course/:id" render={(props) => <CourseDetail {...props} />} />
+			<Route path="/join_classroom" render={(props) => <VirtualClassroom {...props} />} />
 			{/* Student Routes */}
 			<ProtectedStudentRoute exact path="/studenthome" component={StudentHome} />
 			<ProtectedStudentRoute exact path="/studentCourse/:id" component={CourseDetailStudent} />
