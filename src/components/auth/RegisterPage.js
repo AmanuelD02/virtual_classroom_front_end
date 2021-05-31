@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import classnames from 'classnames';
+
 import axios from '../../axios';
 // reactstrap components
 import {
@@ -13,6 +14,7 @@ import {
 	CardTitle,
 	Label,
 	FormGroup,
+	UncontrolledAlert,
 	Form,
 	Input,
 	InputGroupAddon,
@@ -23,28 +25,6 @@ import {
 	Col
 } from 'reactstrap';
 
-const validate = (values) => {
-	let errors = {};
-	const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
-	if (!values.email) {
-		errors.email = 'Email is Required';
-	} else if (!regex.test(values.email)) {
-		errors.email = 'Invalid email format';
-	}
-
-	if (!values.password) {
-		errors.password = 'Cannot be blank';
-	} else if (values.password.length < 3) {
-		errors.password = 'Password must be more than 3 characters';
-	}
-	if (values.password !== values.confirmPassword) {
-		errors.confirmPassword = 'Password Must Match ';
-	}
-
-	return errors;
-};
-
 export default function RegisterPage() {
 	const [ squares1to6, setSquares1to6 ] = React.useState('');
 	const [ squares7and8, setSquares7and8 ] = React.useState('');
@@ -52,6 +32,7 @@ export default function RegisterPage() {
 	const [ lNameFocus, setLNameFocus ] = React.useState(false);
 	const [ emailFocus, setEmailFocus ] = React.useState(false);
 	const [ passwordFocus, setPasswordFocus ] = React.useState(false);
+	const history = useHistory();
 
 	//  Login Input Hooks
 	const [ values, setValues ] = useState({
@@ -64,7 +45,7 @@ export default function RegisterPage() {
 	});
 	const [ AgreeTerm, setAgreeTerm ] = useState(true);
 	// Validations
-	const [ formErrors, setFormErrors ] = useState({});
+	const [ formErrors, setFormErrors ] = useState({ title: '', msg: '' });
 
 	React.useEffect(() => {
 		document.body.classList.toggle('register-page');
@@ -84,8 +65,11 @@ export default function RegisterPage() {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-
-		if (values.confirmPassword === values.password) {
+		if (values.password.length <= 4) {
+			console.log('WEAK PSD');
+			setFormErrors({ title: `Password`, msg: `Weak Password` });
+		} else if (values.confirmPassword === values.password) {
+			setFormErrors({ title: '', msg: '' });
 			console.log(values);
 			if (values.userType === 'student') {
 				axios
@@ -98,6 +82,7 @@ export default function RegisterPage() {
 					.then((res) => {
 						console.log('Student');
 						console.log(res);
+						history.push('/login');
 					})
 					.catch((e) => {
 						console.log('ERROR');
@@ -114,12 +99,14 @@ export default function RegisterPage() {
 					.then((res) => {
 						console.log('Teacher:');
 						console.log(res);
+						history.push('/login');
 					})
 					.catch((e) => {
 						console.log('ERROR');
 						console.log(e);
 					});
 			}
+
 			setValues({
 				fname: '',
 				lname: '',
@@ -133,7 +120,7 @@ export default function RegisterPage() {
 				password: '',
 				confirmPassword: ''
 			}));
-			alert('Password dont match');
+			setFormErrors({ title: `Password`, msg: `Password don't match` });
 		}
 	};
 	const handleChange = (e) => {
@@ -206,6 +193,22 @@ export default function RegisterPage() {
 														</div>
 													</div>
 
+													<UncontrolledAlert
+														className="alert-with-icon"
+														isOpen={formErrors.title}
+														toggle={() => setFormErrors({ title: '', msg: '' })}
+														color="danger"
+													>
+														<span
+															data-notify="icon"
+															className="tim-icons icon-support-17"
+														/>
+														<span>
+															<b>{formErrors.title}</b> {':  '}
+															{formErrors.msg}
+														</span>
+													</UncontrolledAlert>
+
 													<InputGroup
 														className={classnames({
 															'input-group-focus': fNameFocus
@@ -218,8 +221,8 @@ export default function RegisterPage() {
 														</InputGroupAddon>
 														<Input
 															placeholder="First Name"
-															type="fname"
 															name="fname"
+															required
 															id="fname"
 															value={values.fname}
 															onChange={handleChange}
@@ -241,8 +244,8 @@ export default function RegisterPage() {
 														</InputGroupAddon>
 														<Input
 															placeholder="Last Name"
-															type="lname"
 															name="lname"
+															required
 															id="lname"
 															type="text"
 															value={values.lname}
@@ -263,7 +266,8 @@ export default function RegisterPage() {
 														</InputGroupAddon>
 														<Input
 															placeholder="Email"
-															type="text"
+															required
+															type="email"
 															value={values.email}
 															onChange={(e) => {
 																setValues((values) => ({
@@ -288,6 +292,7 @@ export default function RegisterPage() {
 														<Input
 															placeholder="Password"
 															type="password"
+															required
 															name="password"
 															id="password"
 															value={values.password}
@@ -305,6 +310,7 @@ export default function RegisterPage() {
 														<Input
 															placeholder="Confirm Password"
 															name="confirmPassword"
+															required
 															id="confirmPassword"
 															type="password"
 															value={values.confirmPassword}
@@ -342,7 +348,7 @@ export default function RegisterPage() {
 																<Label check>
 																	<Input
 																		defaultValue="option1"
-																		id="exampleRadios1"
+																		id="exampleRadios2"
 																		name="exampleRadios"
 																		type="radio"
 																		checked={values.userType === 'instructor'}

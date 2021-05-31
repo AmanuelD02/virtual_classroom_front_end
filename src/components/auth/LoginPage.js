@@ -156,7 +156,8 @@ export default function RegisterPage() {
 														</InputGroupAddon>
 														<Input
 															placeholder="Email"
-															type="text"
+															type="email"
+															required
 															value={values.email}
 															onChange={(e) => {
 																setValues((values) => ({
@@ -181,6 +182,7 @@ export default function RegisterPage() {
 														<Input
 															placeholder="Password"
 															type="password"
+															required
 															value={values.password}
 															onChange={(e) => {
 																setValues((values) => ({
