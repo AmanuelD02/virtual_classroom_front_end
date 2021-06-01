@@ -22054,7 +22054,6 @@ td.rdtYear:hover {
 	height: 22px;
 	width: 45px;
 	border: none;
-	background-image: url("../../../../assets/img/darken-night-sky-full-of-stars-fantasy-animation-made-of-magical-sparkly-light-particles-flickering-on-a-purple-blue-gradient-background_bajacpz7x_thumbnail-full01.png");
 	background-position: center center;
 	background-size: cover;
 }
@@ -22066,7 +22065,6 @@ td.rdtYear:hover {
 }
 
 .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
-	background-image: url("../../../../assets/img/night-sky-full-of-stars-fantasy-animation-made-of-magical-sparkly-light-particles-flickering-on-a-purple-blue-gradient-background_bajacpz7x_thumbnail-full01.png");
 }
 
 .custom-switch .custom-control-input:checked ~ .custom-control-label::after {
