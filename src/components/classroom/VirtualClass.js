@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Row, Col, ListGroup, ListGroupItem, ListGroupItemHeading, ListGroupItemText} from 'reactstrap';
+import {Row, Col, ListGroup, ListGroupItem, Button, ListGroupItemText} from 'reactstrap';
 import * as signalR from '@microsoft/signalr'
 import Peer from 'peerjs'
 
@@ -24,12 +24,11 @@ let user_infos = {
 function VirtualClassRoom(props){
     let query = new URLSearchParams(props.location.search);
     
+    let classID = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
     function init_video(role){
         console.log(`Initing for ${role}`);
         let myPeer;
         let myStream = null;
-        let connection;
-        let classID = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
         const token = query.get('teacher') ? "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjRjYjdhMTBhLWNmYmYtNDAyMC1mYWNkLTA4ZDkyMzM0NTJkOCxJbnN0cnVjdG9yIiwibmJmIjoxNjIyMzU2NjMwLCJleHAiOjE2MjIzOTI2MzAsImlhdCI6MTYyMjM1NjYzMH0.mLGnSjc1ZiOUrxWYnp_1cNR2-tQ0zj4sU4LohCgICnU": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjVhMmVjZmM2LWQzOWYtNGQ3YS0yNzk2LTA4ZDkyM2Y2MmYxYixTdHVkZW50IiwibmJmIjoxNjIyNDM5NDk5LCJleHAiOjE2MjI0NzU0OTksImlhdCI6MTYyMjQzOTQ5OX0.f7IAx-_us8fNLNK0mfG9aIVdmvqwR1aLhPiAeYnLJ7w";
 
         // const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjVhMmVjZmM2LWQzOWYtNGQ3YS0yNzk2LTA4ZDkyM2Y2MmYxYixTdHVkZW50IiwibmJmIjoxNjIyNDM5NDk5LCJleHAiOjE2MjI0NzU0OTksImlhdCI6MTYyMjQzOTQ5OX0.f7IAx-_us8fNLNK0mfG9aIVdmvqwR1aLhPiAeYnLJ7w";
@@ -56,6 +55,10 @@ function VirtualClassRoom(props){
             connection.on('Classroom', classroomID => {
                 console.log(`Original id: 3fa85f64-5717-4562-b3fc-2c963f66afa6, reported id: ${classroomID}`);
             })
+
+            connection.on('MakeMute', mute);
+
+            connection.on('MakeUnmute', unmute);
             
             connection.on('UserDisconnected', userId => {
                 console.log("Servers reports disconnect");
@@ -136,6 +139,7 @@ function VirtualClassRoom(props){
 
 
         connection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
+        setConnection(connection);
         navigator.mediaDevices.getUserMedia(
             role === 'Instructor' ? { video: true, audio: true } : {audio: true}
         ).then(stream => {
@@ -152,6 +156,8 @@ function VirtualClassRoom(props){
                     console.log("Peer is open");
                     connection.invoke("JoinRoom", id, classID, token);
                     addStream(myStream, id);
+                    console.log(`Muting ${id}`);
+                    mute(id);
                 });
             }).catch(function (err) {
                 return console.error(err.toString());
@@ -183,7 +189,26 @@ function VirtualClassRoom(props){
             // remove 
         }
 
+        function mute(id){
+            setMuteList(oldMuteList => ({...oldMuteList, [id]: true}))
+        }
+        function unmute(id){
+            setMuteList(oldMuteList => {
+                const newMuteList = {...oldMuteList};
+                delete newMuteList[id];
+                return newMuteList;
+            })
+        }
+
         return async () => {await connection.stop()}
+    }
+
+    function sendMute(id){
+        connection.invoke("SendMute", id, classID);
+    }
+
+    function sendUnmute(id){
+        connection.invoke("SendUnMute", id, classID);
     }
 
     // state studentlist : call_id : {call_id: connected: bool, audio: boolean, username: string}  
@@ -194,6 +219,12 @@ function VirtualClassRoom(props){
     // state streams : call_id: src 
 
     let [streams, setStreams] = useState({});
+
+    // state mutelist: call_id: true
+    let [mutelist, setMuteList] = useState({})
+
+    // Adding the connection object as a state
+     let [connection, setConnection] = useState({});
 
 
     let tempStudentDict = {};
@@ -206,10 +237,10 @@ function VirtualClassRoom(props){
         }
     });
 
-    
+    let role = (query.get('teacher') === null) ? "Student" : "Instructor";    
     useEffect(()=> {
         // TODO: Change this to from local storage
-        let end_func = init_video((query.get('teacher') === null) ? "Student" : "Instructor");
+        let end_func = init_video(role);
         return end_func;
     }, []);
 
@@ -231,7 +262,12 @@ function VirtualClassRoom(props){
                                     video.onloadedmetadata = () => {
                                         console.log("Video metadata loaded, video should play")
                                         video.play()
-                                    }}}/>}
+                                    }
+                                    if (mutelist[id]){
+                                        console.log("muting video for teacher");
+                                        video.muted=true;
+                                    }
+                                    }}/>}
                             </div>
                         ))}
                     </Col>
@@ -247,13 +283,26 @@ function VirtualClassRoom(props){
                                         Audio: {user.audio.toString()} 
                                         CallID: {id}
                                         Connected: {user.connected.toString()} 
+                                        {((role === "Instructor" && mutelist[id] === undefined) && 
+                                            <Button onClick={()=>sendMute(id)}> Mute </Button>)
+                                        }
+                                        {((role === "Instructor" && mutelist[id] !== undefined) && 
+                                            <Button onClick={()=>sendUnmute(id)}> Unmute </Button>)
+                                        }
                                         {(streams[id] !== undefined) && <audio ref = {audio => {
                                             if (audio === null) return
                                             audio.srcObject = streams[id]; 
                                             audio.onloadedmetadata = () => {
                                                 console.log("Audio metadata loaded, audio should play")
                                                 audio.play()
-                                        }}}/>}
+                                            }
+                                            if (mutelist[id]){
+                                                console.log("muting audio for student");
+                                                audio.muted = true;
+                                            } else {
+                                                audio.muted = false;
+                                            }
+                                        }}/>}
                                     </ListGroupItemText>
                                     <br />
                                 </ListGroupItem>
