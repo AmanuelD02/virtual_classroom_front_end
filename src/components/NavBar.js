@@ -24,6 +24,7 @@ import { FaSignOutAlt } from 'react-icons/fa';
 const logout = () => {
 	localStorage.removeItem('user');
 	localStorage.removeItem('userType');
+	localStorage.removeItem('REACT_TOKEN_AUTH');
 };
 
 function authCheck() {
@@ -83,7 +84,7 @@ export default function NavBar() {
 	}, []);
 	const changeColor = () => {
 		if (document.documentElement.scrollTop > 99 || document.body.scrollTop > 99) {
-			setColor('bg-info');
+			setColor('');
 		} else if (document.documentElement.scrollTop < 100 || document.body.scrollTop < 100) {
 			setColor('navbar-transparent');
 		}

@@ -1,49 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'reactstrap';
 import ClassCard from '../ClassCard';
+import axios from '../../axios';
 
-const sampleData = [
-	{
-		id: 1,
-		title: 'Web Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'HTML5/CSS3/JS'
-	},
-	{
-		id: 2,
-		title: 'Mobile Programming',
-		instructor: 'Amanuel Negash',
-		description: 'Android with Kotlin'
-	},
-	{
-		id: 3,
-		title: 'Networking',
-		instructor: 'Dr. Seleshi',
-		description: 'Networking '
-	},
-	{
-		id: 4,
-		title: 'Web Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'HTML5/CSS3/JS'
-	},
-	{
-		id: 5,
-		title: 'Mobile Programming',
-		instructor: 'Amanuel Negash',
-		description: 'Android with Kotlin'
-	},
-	{
-		id: 6,
-		title: 'Networking',
-		instructor: 'Dr. Seleshi',
-		description: 'Networking '
-	}
-];
+function StudentHome() {
+	const [ courses, setCourses ] = useState([]);
+	const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
 
-function studentHome() {
+	useEffect(() => {
+		async function fetchData() {
+			const request = await axios.get('Course/studentCourses');
+
+			console.log('REQuest');
+			console.log(request);
+			setCourses(request.data);
+
+			return request;
+		}
+
+		fetchData();
+	}, []);
 	return (
 		<React.Fragment>
+			{console.log(token)}
 			<div className="wrapper">
 				<div className="page-header">
 					<div className="content">
@@ -52,11 +31,11 @@ function studentHome() {
 						</div>
 						<Container>
 							<Row>
-								{sampleData.map((card) => {
+								{courses.map((card) => {
 									return (
-										<Col md="4" key={card.id}>
+										<Col md="4" key={card.courseId}>
 											<ClassCard
-												id={card.id}
+												id={card.courseId}
 												title={card.title}
 												instructor={card.instructor}
 												description={card.description}
@@ -73,4 +52,4 @@ function studentHome() {
 	);
 }
 
-export default studentHome;
+export default StudentHome;

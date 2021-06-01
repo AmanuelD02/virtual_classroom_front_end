@@ -1,8 +1,33 @@
-import React from 'react';
-import { FormGroup, Form, Input, Row, Col, Container, Card, CardBody, CardFooter, Button, Label } from 'reactstrap';
 import '../../assets/css/createCourse.css';
-import { FaPlus } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { FormGroup, Form, Input, Row, Col, Container, Card, CardBody, CardFooter, Button, Label } from 'reactstrap';
+import axios from '../../axios';
+
 function CreateClass() {
+	const [ formValues, setFormValues ] = useState({});
+	const history = useHistory();
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+
+		setFormValues({ ...formValues, [name]: value });
+	};
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		setFormValues({});
+		let instructorId = localStorage.getItem('user');
+		axios
+			.post('Course', {
+				title: formValues.title,
+				description: formValues.description,
+				instructorId: instructorId
+			})
+			.then((res) => {
+				history.push('/instructorhome');
+			});
+	};
 	return (
 		<React.Fragment>
 			<div className="wrapper">
@@ -12,7 +37,7 @@ function CreateClass() {
 					<div className="content">
 						<Container>
 							<Card className="card-register">
-								<Form>
+								<Form onSubmit={handleSubmit}>
 									<CardBody>
 										<div className="pl-lg-4 pb-3">
 											<Row>
@@ -23,8 +48,12 @@ function CreateClass() {
 														</label>
 														<Input
 															className="form-control-alternative"
-															id="input-username"
+															id="title"
+															required
+															name="title"
 															placeholder="Title"
+															onChange={handleChange}
+															value={formValues.title}
 															type="text"
 														/>
 													</FormGroup>
@@ -40,13 +69,18 @@ function CreateClass() {
 														<Input
 															className="form-control-alternative"
 															placeholder="Course Description.."
+															required
+															onChange={handleChange}
+															id="description"
+															name="description"
+															value={formValues.description}
 															rows="4"
 															type="textarea"
 														/>
 													</FormGroup>
 												</Col>
 											</Row>
-											<Row className="pb-3">
+											{/* <Row className="pb-3">
 												<Col sm="9">
 													<FormGroup className="border">
 														<label className="form-control-label" htmlFor="input-students">
@@ -55,7 +89,7 @@ function CreateClass() {
 														<Input type="file" name="file" accept=".xlsx" width="50%" />
 													</FormGroup>
 												</Col>
-											</Row>
+											</Row> */}
 										</div>
 									</CardBody>
 									<CardFooter>

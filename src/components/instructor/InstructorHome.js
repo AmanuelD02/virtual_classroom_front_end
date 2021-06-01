@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'reactstrap';
 import ClassCard from '../ClassCard';
+import axios from '../../axios';
 
 const sampleData = [
 	{
@@ -42,6 +43,21 @@ const sampleData = [
 ];
 
 function InstructorHome() {
+	const [ courses, setCourses ] = useState([]);
+
+	useEffect(() => {
+		async function fetchData() {
+			const request = await axios.get('Course/instructorCourses');
+
+			console.log('REQuest');
+			console.log(request);
+			setCourses(request.data);
+
+			return request;
+		}
+
+		fetchData();
+	}, []);
 	return (
 		<React.Fragment>
 			<div className="wrapper">
@@ -52,11 +68,11 @@ function InstructorHome() {
 						</div>
 						<Container>
 							<Row>
-								{sampleData.map((card) => {
+								{courses.map((card) => {
 									return (
-										<Col md="4" key={card.id}>
+										<Col md="4" key={card.courseId}>
 											<ClassCard
-												id={card.id}
+												id={card.courseId}
 												title={card.title}
 												instructor={card.instructor}
 												description={card.description}
