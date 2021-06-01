@@ -37,7 +37,7 @@ import {
 
 import '../../assets/css/courseDetail.css';
 import { useParams } from 'react-router';
-import { isConstructSignatureDeclaration } from 'typescript';
+import { useHistory } from 'react-router-dom';
 
 // core components
 
@@ -45,6 +45,8 @@ let ps = null;
 
 export default function CourseDetailInstructor(props) {
 	let { id } = useParams();
+	const history = useHistory();
+
 	const [ courseInfo, setCourseInfo ] = useState({});
 	const [ studentList, setStudentList ] = useState([]);
 	const [ resourceList, setResourceList ] = useState([
@@ -155,7 +157,8 @@ export default function CourseDetailInstructor(props) {
 
 					console.log(res);
 				})
-				.catch((res) => {
+				.catch((e) => {
+					console.log(e);
 					setStudentEmailNotification({ title: 'Error', msg: 'Student Added to Course!' });
 				});
 		}
@@ -169,10 +172,6 @@ export default function CourseDetailInstructor(props) {
 			console.log(StartTime + '  ' + EndTime);
 		} else {
 			console.log('SENDING..');
-			console.log(classRoomTitle);
-			console.log(startDate.toJSON());
-			console.log(StartTime);
-			console.log(EndTime);
 
 			axios
 				.post(`Course/${id}/Classrooms`, {
@@ -221,7 +220,6 @@ export default function CourseDetailInstructor(props) {
 
 	return (
 		<React.Fragment>
-			{console.log(classRoomList)}
 			<div className="wrapper">
 				<div className="page-header">
 					<img alt="..." className="dots" src={require('assets/img/dots.png').default} />
@@ -316,7 +314,8 @@ export default function CourseDetailInstructor(props) {
 																		</td>
 																		<td>
 																			<p>
-																				{clas.startTime} - {clas.endTime}{' '}
+																				{clas.startTime.substr(0, 5)} -{' '}
+																				{clas.endTime.substr(0, 5)}{' '}
 																			</p>
 																		</td>
 
@@ -324,6 +323,11 @@ export default function CourseDetailInstructor(props) {
 																			<Button
 																				className=" btn-simple btn-round"
 																				width="20px"
+																				onClick={(e) => {
+																					history.push(
+																						`/join_classroom/${id}`
+																					);
+																				}}
 																				color="success"
 																				type="button"
 																			>
@@ -335,6 +339,11 @@ export default function CourseDetailInstructor(props) {
 																				className=" btn-simple btn-round"
 																				width="20px"
 																				color="danger"
+																				onClick={(e) => {
+																					axios.delete(
+																						`Course/${id}/Classrooms/${clas.classRoomId}`
+																					);
+																				}}
 																				type="button"
 																			>
 																				Cancel
@@ -408,7 +417,6 @@ export default function CourseDetailInstructor(props) {
 																				onClick={(e) => {
 																					setDeleteModal(true);
 																					setDeleteStudent(st.id);
-																					console.log(DeleteStudent);
 																				}}
 																			/>
 																		</td>
@@ -533,7 +541,7 @@ export default function CourseDetailInstructor(props) {
 											onChange={(e) => {
 												setClassRoomTitle(e.target.value);
 											}}
-											className="text-dark border"
+											className="text-light border"
 											id="lname"
 											type="text"
 										/>

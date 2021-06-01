@@ -50,7 +50,7 @@ let resourceList = [
 export default function CourseDetailStudent(props) {
 	let { id } = useParams();
 	const [ courseInfo, setCourseInfo ] = useState({});
-
+	const [ classRoomList, setClassRoomList ] = useState([]);
 	const [ tabs, setTabs ] = React.useState(1);
 
 	React.useEffect(() => {
@@ -77,12 +77,27 @@ export default function CourseDetailStudent(props) {
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Course/${id}`);
+				const request = await axios.get(`Course/studentCourses/${id}`);
+				console.log('REQUESt');
+				console.log(request.data);
 				setCourseInfo(request.data);
 
 				return request;
 			}
 
+			fetchData();
+		},
+		[ id ]
+	);
+	// FETCH CLASSROOMS
+	useEffect(
+		() => {
+			async function fetchData() {
+				const request = await axios.get(`Course/${id}/Classrooms`);
+
+				setClassRoomList(request.data);
+				return request;
+			}
 			fetchData();
 		},
 		[ id ]
@@ -97,6 +112,7 @@ export default function CourseDetailStudent(props) {
 					<Container className="align-items-center">
 						<Row>
 							<Col lg="6" md="6">
+								{console.log(courseInfo)}
 								<h1 className="profile-title text-left">{courseInfo.title}</h1>
 
 								<p className="profile-description">{courseInfo.description}</p>
@@ -144,71 +160,33 @@ export default function CourseDetailStudent(props) {
 															</tr>
 														</thead>
 														<tbody>
-															<tr>
-																<td>
-																	{' '}
-																	{new Intl.DateTimeFormat('en-GB', {
-																		year: 'numeric',
-																		month: 'long',
-																		day: '2-digit'
-																	}).format(new Date())}
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="success"
-																		type="button"
-																	>
-																		Join
-																	</Button>
-																</td>
-																<td />
-															</tr>
-															<tr>
-																<td>
-																	{' '}
-																	{new Intl.DateTimeFormat('en-GB', {
-																		year: 'numeric',
-																		month: 'long',
-																		day: '2-digit'
-																	}).format(new Date())}
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="success"
-																		disabled={true}
-																		type="button"
-																	>
-																		Join
-																	</Button>
-																</td>
-																<td />
-															</tr>
-															<tr>
-																<td>
-																	{' '}
-																	{new Intl.DateTimeFormat('en-GB', {
-																		year: 'numeric',
-																		month: 'long',
-																		day: '2-digit'
-																	}).format(new Date())}
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="success"
-																		disabled={true}
-																		type="button"
-																	>
-																		Join
-																	</Button>
-																</td>
-																<td />
-															</tr>
+															{classRoomList.map((clas) => {
+																return (
+																	<tr key={clas.classRoomId}>
+																		<td>
+																			<p>{clas.classRoomName}</p>
+																		</td>
+																		<td> {new Date(clas.date).toDateString()}</td>
+																		<td>
+																			<p>
+																				{clas.startTime.substr(0, 5)} -{' '}
+																				{clas.endTime.substr(0, 5)}{' '}
+																			</p>
+																		</td>
+
+																		<td>
+																			<Button
+																				className=" btn-simple btn-round"
+																				width="20px"
+																				color="success"
+																				type="button"
+																			>
+																				Join
+																			</Button>
+																		</td>
+																	</tr>
+																);
+															})}
 														</tbody>
 													</Table>
 												</div>

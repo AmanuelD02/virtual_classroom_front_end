@@ -1,10 +1,12 @@
 import '../../assets/css/createCourse.css';
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { FormGroup, Form, Input, Row, Col, Container, Card, CardBody, CardFooter, Button, Label } from 'reactstrap';
 import axios from '../../axios';
 
 function CreateClass() {
 	const [ formValues, setFormValues ] = useState({});
+	const history = useHistory();
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -23,7 +25,7 @@ function CreateClass() {
 				instructorId: instructorId
 			})
 			.then((res) => {
-				console.log(res);
+				history.push('/instructorhome');
 			});
 	};
 	return (
@@ -47,6 +49,7 @@ function CreateClass() {
 														<Input
 															className="form-control-alternative"
 															id="title"
+															required
 															name="title"
 															placeholder="Title"
 															onChange={handleChange}
@@ -66,6 +69,7 @@ function CreateClass() {
 														<Input
 															className="form-control-alternative"
 															placeholder="Course Description.."
+															required
 															onChange={handleChange}
 															id="description"
 															name="description"
