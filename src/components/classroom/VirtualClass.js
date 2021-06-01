@@ -22,20 +22,26 @@ let user_infos = {
 
 
 function VirtualClassRoom(props){
-
+    let query = new URLSearchParams(props.location.search);
     
     function init_video(role){
+        console.log(`Initing for ${role}`);
         let myPeer;
-        let myStream;
+        let myStream = null;
+        let connection;
         let classID = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
-        const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjVhMmVjZmM2LWQzOWYtNGQ3YS0yNzk2LTA4ZDkyM2Y2MmYxYixTdHVkZW50IiwibmJmIjoxNjIyNDM5NDk5LCJleHAiOjE2MjI0NzU0OTksImlhdCI6MTYyMjQzOTQ5OX0.f7IAx-_us8fNLNK0mfG9aIVdmvqwR1aLhPiAeYnLJ7w";
+        const token = query.get('teacher') ? "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjRjYjdhMTBhLWNmYmYtNDAyMC1mYWNkLTA4ZDkyMzM0NTJkOCxJbnN0cnVjdG9yIiwibmJmIjoxNjIyMzU2NjMwLCJleHAiOjE2MjIzOTI2MzAsImlhdCI6MTYyMjM1NjYzMH0.mLGnSjc1ZiOUrxWYnp_1cNR2-tQ0zj4sU4LohCgICnU": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjVhMmVjZmM2LWQzOWYtNGQ3YS0yNzk2LTA4ZDkyM2Y2MmYxYixTdHVkZW50IiwibmJmIjoxNjIyNDM5NDk5LCJleHAiOjE2MjI0NzU0OTksImlhdCI6MTYyMjQzOTQ5OX0.f7IAx-_us8fNLNK0mfG9aIVdmvqwR1aLhPiAeYnLJ7w";
+
+        // const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjVhMmVjZmM2LWQzOWYtNGQ3YS0yNzk2LTA4ZDkyM2Y2MmYxYixTdHVkZW50IiwibmJmIjoxNjIyNDM5NDk5LCJleHAiOjE2MjI0NzU0OTksImlhdCI6MTYyMjQzOTQ5OX0.f7IAx-_us8fNLNK0mfG9aIVdmvqwR1aLhPiAeYnLJ7w";
         
         function configure_connection(connection){
             connection.on('UserConnected', user => {
-                let userID = user.callId;
+                user = JSON.parse(user);
+                let userID = user.CallId;
                 console.log("Server Reports success")
-                console.log(user)
-                connectToNewUser(userID, myStream)
+                console.log(user);
+                addNewUser([userID, user]);
+                connectToNewUser(userID, myStream);
             })
             
             connection.on('ClassInfo', infos => {
@@ -44,6 +50,7 @@ function VirtualClassRoom(props){
                 console.log(infos);
                 setStudentDict({});
                 Object.entries(infos).forEach(addNewUser);
+                configure_peer(myPeer);
             })
             
             connection.on('Classroom', classroomID => {
@@ -51,48 +58,60 @@ function VirtualClassRoom(props){
             })
             
             connection.on('UserDisconnected', userId => {
-                console.log("Servers reports disconnect")
+                console.log("Servers reports disconnect");
+                removeUser(userId);
             })
             
             function connectToNewUser(userId, stream) {
                 console.log("New User Connected " + userId);
-                return;
                 const call = myPeer.call(userId, stream)
                 call.on('stream', userVideoStream => {
                     console.log("Got stream from remote peer")
-                    addVideoStream(userVideoStream, userId)
+                    addStream(userVideoStream, userId)
                 })
                 call.on('close', () => {
                     console.log("remote peer closed call");
+                    // TODO: finish remove stream; I don't think we have to use it for removing the teacher stream
                     removeStream(userId);
                 })
             }
             function addNewUser([id, info]){
                 console.log("Adding user");
-                const user = {[id]: {call_id: id, connected: false, audio: info.HasAudio, username: info.UserName}}
+                const user = {[id]: {call_id: id, connected: false, audio: info.HasAudio, video: info.HasVideo, username: info.UserName}}
                 if (info.Role === "Student"){
-                    console.log("Got here");
-                    console.log(user);
                     setStudentDict((oldStudentDict) => ({...oldStudentDict, ...user}));
                 } else {
                     setTeacherDict((oldTeacherDict) => ({...oldTeacherDict, ...user}));
                 }
             }
+            function removeUser(id){
+                console.log("Removing user");
+                if (studentDict[id] !== undefined){
+                    setStudentDict((oldStudentDict) => {
+                        const newStudentDict = {...oldStudentDict};
+                        delete newStudentDict[id];
+                        return newStudentDict;
+                    });
+                } else {
+                    setTeacherDict((oldTeacherDict) => {
+                        const newTeacherDict = {...oldTeacherDict};
+                        delete newTeacherDict[id];
+                        return newTeacherDict;
+                    });
+                }
+            }
         }
         function configure_peer(myPeer){
-            myPeer.on('open', id => {
-                console.log("Peer is open");
-                connection.invoke("JoinRoom", id, classID, token);
-            });
-            
+
             myPeer.on('call', call => {
+                
                 console.log("Found Call!!");
                 
                 call.answer(myStream);
         
-                call.on('stream', userVideoStream => {
+                call.on('stream', userStream => {
                     console.log("Got stream from remote peer")
-                    addVideoStream(userVideoStream, call.peer)
+                    addStream(userStream, call.peer);
                 });
                 
                 call.on('close', () => {
@@ -103,58 +122,65 @@ function VirtualClassRoom(props){
         }
 
 
-        var connection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
+        connection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
         navigator.mediaDevices.getUserMedia(
-            role === 'Student' ? { video: true, audio: true } : {audio: true}
+            role === 'Instructor' ? { video: true, audio: true } : {audio: true}
         ).then(stream => {
             myStream = stream;
             console.log("Current user video stream added!");
-            // addVideoStream(stream, myPeer.id)
 
             connection.start().then(function () {
                 configure_connection(connection);
 
                 // TODO: Improve this implementation
-                myPeer = new Peer(undefined);
+                myPeer = new Peer(undefined, {host: "/", port: 3001});
 
                 myPeer.on('open', id => {
                     console.log("Peer is open");
-                    // TODO: Make sure it works
                     connection.invoke("JoinRoom", id, classID, token);
+                    addStream(myStream, id);
                 });
-
-                // TODO: should be called after JoinClassroom
-                // myPeer = new Peer(undefined);
-                // configure_peer(myPeer);
             }).catch(function (err) {
                 return console.error(err.toString());
             });
         });
         
         
-        
-        function addVideoStream(stream, id) {
-            console.log("video stream added");
-            console.log(id);
-            if (studentDict[id] !== null){
-                studentDict[id] = {call_id: id, connected: true, audio: true, username: "Unknown"};
-                setStudentDict(studentDict);
-            } else {
-                teacherDict[id] = {call_id: id, connected: true, audio: true, username: "Unknown"};
-                setTeacherDict(teacherDict);
-            }
+        function addStream(stream, id){
+            setStreams((oldStreams) => ({...oldStreams, [id]: stream}));
+            setStudentDict(oldStudentDict => {
+                if (oldStudentDict[id] !== undefined){
+                    const newStudentDict = {...oldStudentDict};
+                    newStudentDict[id].connected = true;
+                    return newStudentDict
+                }
+                return oldStudentDict;
+            })
+            setTeacherDict(oldTeacherDict => {
+                if (oldTeacherDict[id] !== undefined){
+                    const newTeacherDict = {...oldTeacherDict};
+                    newTeacherDict[id].connected = true;
+                    return newTeacherDict
+                }
+                return oldTeacherDict;
+            })
         }
 
         function removeStream(id){
             // remove 
         }
+
+        return async () => {await connection.stop()}
     }
 
-
-    // state studentlist : {call_id: connected: bool, audio: boolean, username: string}  
+    // state studentlist : call_id : {call_id: connected: bool, audio: boolean, username: string}  
 
     let [studentDict, setStudentDict] = useState({});
     let [teacherDict, setTeacherDict] = useState({});
+
+    // state streams : call_id: src 
+
+    let [streams, setStreams] = useState({});
 
 
     let tempStudentDict = {};
@@ -170,7 +196,8 @@ function VirtualClassRoom(props){
     
     useEffect(()=> {
         // TODO: Change this to from local storage
-        init_video("Instructor");
+        let end_func = init_video((query.get('teacher') === null) ? "Student" : "Instructor");
+        return end_func;
     }, []);
 
     return (
@@ -182,7 +209,18 @@ function VirtualClassRoom(props){
                 <Row>
                     <Col sm="9">
                         Teacher video stream
-                        <video />
+                        {Object.entries(teacherDict).map(([id, teacher]) => (
+                            <div key={id}>
+                                <p>{teacher.username}</p>
+                                {(streams[id] !== undefined) && <video ref = {video => {
+                                    if (video === null) return;
+                                    video.srcObject = streams[id]; 
+                                    video.addEventListener('loadedmetadata', () => {
+                                        console.log("Video metadata loaded, video should play")
+                                        video.play()
+                                    })}}/>}
+                            </div>
+                        ))}
                     </Col>
                     <Col sm="3">
                         {/* Student list */}
@@ -192,11 +230,17 @@ function VirtualClassRoom(props){
                                 <ListGroupItem key={id} color='dark'>
                                     <ListGroupItemText>
                                         {user.username} <br />
-                                        Video: {user.audio} 
-                                        Audio: {user.HasAudio} 
+                                        Video: {user.video.toString()} 
+                                        Audio: {user.audio.toString()} 
                                         CallID: {id}
-                                        Connected: {user.connected} 
-                                        {(user.src !== null) && <audio src={user.src} onLoadedMetadata={(e)=>e.target.play()}/>}
+                                        Connected: {user.connected.toString()} 
+                                        {(streams[id] !== undefined) && <audio ref = {audio => {
+                                            if (audio === null) return
+                                            audio.srcObject = streams[id]; 
+                                            audio.addEventListener('loadedmetadata', () => {
+                                                console.log("Audio metadata loaded, video should play")
+                                                audio.play()
+                                        })}}/>}
                                     </ListGroupItemText>
                                     <br />
                                 </ListGroupItem>
