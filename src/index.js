@@ -30,7 +30,7 @@ ReactDOM.render(
 			<Route path="/register" render={(props) => <RegisterPage {...props} />} />
 			<Route path="/login" render={(props) => <LoginPage {...props} />} />
 			<Route path="/course/:id" render={(props) => <CourseDetail {...props} />} />
-			<Route path="/join_classroom" render={(props) => <VirtualClassroom {...props} />} />
+			<Route path="/join_classroom/:id" render={(props) => <VirtualClassroom {...props} />} />
 			{/* Student Routes */}
 			<ProtectedStudentRoute exact path="/studenthome" component={StudentHome} />
 			<ProtectedStudentRoute exact path="/studentCourse/:id" component={CourseDetailStudent} />
