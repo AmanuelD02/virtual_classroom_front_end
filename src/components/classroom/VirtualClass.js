@@ -64,10 +64,23 @@ function VirtualClassRoom(props){
             
             function connectToNewUser(userId, stream) {
                 console.log("New User Connected " + userId);
-                const call = myPeer.call(userId, stream)
+                let options = {
+                    'constraints': {
+                      'mandatory': {
+                        'OfferToReceiveAudio': true,
+                        'OfferToReceiveVideo': true
+                      },
+                      offerToReceiveAudio: 1,
+                      offerToReceiveVideo: 1,
+                    }
+                  }
+                const call = myPeer.call(userId, stream, options);
                 call.on('stream', userVideoStream => {
                     console.log("Got stream from remote peer")
                     addStream(userVideoStream, userId)
+                })
+                call.on('error', () => {
+                    console.log("call reported error");
                 })
                 call.on('close', () => {
                     console.log("remote peer closed call");
@@ -211,14 +224,14 @@ function VirtualClassRoom(props){
                         Teacher video stream
                         {Object.entries(teacherDict).map(([id, teacher]) => (
                             <div key={id}>
-                                <p>{teacher.username}</p>
+                                <p>{teacher.username} {id}</p>
                                 {(streams[id] !== undefined) && <video ref = {video => {
                                     if (video === null) return;
                                     video.srcObject = streams[id]; 
-                                    video.addEventListener('loadedmetadata', () => {
+                                    video.onloadedmetadata = () => {
                                         console.log("Video metadata loaded, video should play")
                                         video.play()
-                                    })}}/>}
+                                    }}}/>}
                             </div>
                         ))}
                     </Col>
@@ -237,10 +250,10 @@ function VirtualClassRoom(props){
                                         {(streams[id] !== undefined) && <audio ref = {audio => {
                                             if (audio === null) return
                                             audio.srcObject = streams[id]; 
-                                            audio.addEventListener('loadedmetadata', () => {
-                                                console.log("Audio metadata loaded, video should play")
+                                            audio.onloadedmetadata = () => {
+                                                console.log("Audio metadata loaded, audio should play")
                                                 audio.play()
-                                        })}}/>}
+                                        }}}/>}
                                     </ListGroupItemText>
                                     <br />
                                 </ListGroupItem>
