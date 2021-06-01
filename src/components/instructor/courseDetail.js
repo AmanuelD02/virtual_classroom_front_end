@@ -15,6 +15,7 @@ import {
 	Button,
 	Card,
 	CardHeader,
+	UncontrolledAlert,
 	CardBody,
 	Label,
 	Form,
@@ -36,6 +37,7 @@ import {
 
 import '../../assets/css/courseDetail.css';
 import { useParams } from 'react-router';
+import { isConstructSignatureDeclaration } from 'typescript';
 
 // core components
 
@@ -54,11 +56,29 @@ export default function CourseDetailInstructor(props) {
 	]);
 	const [ classRoomList, setClassRoomList ] = useState([]);
 
+	const [ classRoomTitle, setClassRoomTitle ] = useState('');
+	const [ startDate, setStartDate ] = useState(new Date());
+	const [ StartTime, setStartTime ] = useState('12:00');
+	const [ showStartTime, setShowStartTime ] = useState(false);
+
+	const [ EndTime, setEndTime ] = useState('13:00');
+	const [ showEndTime, setShowEndTime ] = useState(false);
+
+	const [ tabs, setTabs ] = React.useState(1);
+	const [ DemoModal, setDemoModal ] = React.useState(false);
+	const [ DeleteStudent, setDeleteStudent ] = React.useState(0);
+	const [ DeleteModal, setDeleteModal ] = React.useState(false);
+	const [ addVirtualClassRoom, setAddVirtualClassRoom ] = React.useState(false);
+
+	const [ studentEmail, setStudentEmail ] = useState('');
+	const [ studentEmailNotification, setStudentEmailNotification ] = useState({ title: '', msg: '' });
+
+	// COURSE DETAILS
 	useEffect(
 		() => {
 			async function fetchData() {
 				const request = await axios.get(`Course/${id}`);
-				console.log('token ' + localStorage.getItem('REACT_TOKEN_AUTH'));
+
 				setCourseInfo(request.data);
 
 				return request;
@@ -68,7 +88,7 @@ export default function CourseDetailInstructor(props) {
 		},
 		[ id ]
 	);
-
+	// LIST OF STUDENTS
 	useEffect(
 		() => {
 			async function fetchData() {
@@ -102,12 +122,12 @@ export default function CourseDetailInstructor(props) {
 	// 	[ id ]
 	// );
 
+	// FETCH CLASSROOMS
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Courses/${id}/Classrooms`);
-				console.log('ReQuest');
-				console.log(request.data);
+				const request = await axios.get(`Course/${id}/Classrooms`);
+
 				setClassRoomList(request.data);
 				return request;
 			}
@@ -116,30 +136,68 @@ export default function CourseDetailInstructor(props) {
 		[ id ]
 	);
 
-	const [ startDate, setStartDate ] = useState(null);
-	const [ StartTime, setStartTime ] = useState('12:00am');
-	const [ showStartTime, setShowStartTime ] = useState(false);
-
-	const [ EndTime, setEndTime ] = useState('1:00pm');
-	const [ showEndTime, setShowEndTime ] = useState(false);
-
-	const [ tabs, setTabs ] = React.useState(1);
-	const [ DemoModal, setDemoModal ] = React.useState(false);
-	const [ DeleteStudent, setDeleteStudent ] = React.useState(0);
-	const [ DeleteModal, setDeleteModal ] = React.useState(false);
-	const [ addVirtualClassRoom, setAddVirtualClassRoom ] = React.useState(false);
-
-	const [ studentEmail, setStudentEmail ] = useState('');
-
 	function AddStudent(e) {
 		e.preventDefault();
 
-		// axios.post(`Course/${id}`, {
-		// 	studentId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-		// 	courseId: id
-		// });
+		async function fetchStudentId() {
+			console.log('Student Email is ' + studentEmail);
+			const request = await axios.get(`authenticate/Students/StudentEmail/${studentEmail}`);
+			const res = await request.data;
+
+			const req = await axios
+				.post(`Course/student/${id}`, {
+					studentId: res.id,
+					courseId: id
+				})
+				.then((res) => {
+					setStudentEmail('');
+					setStudentEmailNotification({ title: 'Success', msg: 'Student Added to Course!' });
+
+					console.log(res);
+				})
+				.catch((res) => {
+					setStudentEmailNotification({ title: 'Error', msg: 'Student Added to Course!' });
+				});
+		}
+
+		fetchStudentId();
 	}
 
+	function submitVirtualClassRoom() {
+		if (new Date(`01/01/2000 ${StartTime}`) >= new Date(`01/01/2000 ${EndTime}`)) {
+			console.log('ERROR');
+			console.log(StartTime + '  ' + EndTime);
+		} else {
+			console.log('SENDING..');
+			console.log(classRoomTitle);
+			console.log(startDate.toJSON());
+			console.log(StartTime);
+			console.log(EndTime);
+
+			axios
+				.post(`Course/${id}/Classrooms`, {
+					classRoomName: classRoomTitle,
+					date: startDate.toJSON(),
+					startTime: StartTime,
+					endTime: EndTime,
+					courseId: id
+				})
+				.then((res) => {
+					setClassRoomTitle('');
+					setStartTime('12:00');
+					setEndTime('13:00');
+					setStartDate(new Date());
+					setAddVirtualClassRoom(false);
+					console.log('RESPONSE IS');
+					console.log(res.data);
+				})
+				.catch((e) => {
+					console.log('E');
+					console.log(e);
+				});
+		}
+	}
+	// UI
 	React.useEffect(() => {
 		if (navigator.platform.indexOf('Win') > -1) {
 			document.documentElement.className += ' perfect-scrollbar-on';
@@ -163,6 +221,7 @@ export default function CourseDetailInstructor(props) {
 
 	return (
 		<React.Fragment>
+			{console.log(classRoomList)}
 			<div className="wrapper">
 				<div className="page-header">
 					<img alt="..." className="dots" src={require('assets/img/dots.png').default} />
@@ -223,7 +282,7 @@ export default function CourseDetailInstructor(props) {
 										</Nav>
 										<TabContent className="tab-subcategories" activeTab={'tab' + tabs}>
 											<TabPane tabId="tab1">
-												<div class="table-wrapper-scroll-y my-custom-scrollbar">
+												<div className="table-wrapper-scroll-y my-custom-scrollbar">
 													<Table className="tablesorter" responsive>
 														<thead className="text-primary">
 															<tr>
@@ -244,96 +303,46 @@ export default function CourseDetailInstructor(props) {
 															</tr>
 														</thead>
 														<tbody>
-															<tr>
-																<td>
-																	{' '}
-																	{new Intl.DateTimeFormat('en-GB', {
-																		year: 'numeric',
-																		month: 'long',
-																		day: '2-digit'
-																	}).format(new Date())}
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="success"
-																		type="button"
-																	>
-																		Join
-																	</Button>
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="danger"
-																		type="button"
-																	>
-																		Cancel
-																	</Button>
-																</td>
-															</tr>
-															<tr>
-																<td>
-																	{' '}
-																	{new Intl.DateTimeFormat('en-GB', {
-																		year: 'numeric',
-																		month: 'long',
-																		day: '2-digit'
-																	}).format(new Date())}
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="success"
-																		type="button"
-																	>
-																		Join
-																	</Button>
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="danger"
-																		type="button"
-																	>
-																		Cancel
-																	</Button>
-																</td>
-															</tr>
-															<tr>
-																<td>
-																	{' '}
-																	{new Intl.DateTimeFormat('en-GB', {
-																		year: 'numeric',
-																		month: 'long',
-																		day: '2-digit'
-																	}).format(new Date())}
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="success"
-																		type="button"
-																	>
-																		Join
-																	</Button>
-																</td>
-																<td>
-																	<Button
-																		className=" btn-simple btn-round"
-																		width="20px"
-																		color="danger"
-																		type="button"
-																	>
-																		Cancel
-																	</Button>
-																</td>
-															</tr>
+															{classRoomList.map((clas) => {
+																return (
+																	<tr key={clas.classRoomId}>
+																		<td>
+																			<p>{clas.classRoomName}</p>
+																		</td>
+																		<td>
+																			{' '}
+																			{clas.date &&
+																				new Date(clas.date).toDateString()}
+																		</td>
+																		<td>
+																			<p>
+																				{clas.startTime} - {clas.endTime}{' '}
+																			</p>
+																		</td>
+
+																		<td>
+																			<Button
+																				className=" btn-simple btn-round"
+																				width="20px"
+																				color="success"
+																				type="button"
+																			>
+																				Join
+																			</Button>
+																		</td>
+																		<td>
+																			<Button
+																				className=" btn-simple btn-round"
+																				width="20px"
+																				color="danger"
+																				type="button"
+																			>
+																				Cancel
+																			</Button>
+																		</td>
+																	</tr>
+																);
+															})}
 														</tbody>
 													</Table>
 												</div>
@@ -343,10 +352,27 @@ export default function CourseDetailInstructor(props) {
 													<Row className="pb-3">
 														<Label sm="3">Email</Label>
 														<Col sm="9">
+															<UncontrolledAlert
+																className="alert-with-icon"
+																isOpen={studentEmailNotification.title}
+																toggle={() =>
+																	setStudentEmailNotification({ title: '', msg: '' })}
+																color="danger"
+															>
+																<span
+																	data-notify="icon"
+																	className="tim-icons icon-support-17"
+																/>
+																<span>
+																	<b>{studentEmailNotification.title}</b> {':  '}
+																	{studentEmailNotification.msg}
+																</span>
+															</UncontrolledAlert>
 															<FormGroup>
 																<Input
 																	placeholder="e.g. sample@gmail.com"
 																	type="email"
+																	required
 																	value={studentEmail}
 																	onChange={(e) => setStudentEmail(e.target.value)}
 																/>
@@ -364,7 +390,7 @@ export default function CourseDetailInstructor(props) {
 												</Form>
 											</TabPane>
 											<TabPane tabId="tab3">
-												<div class="table-wrapper-scroll-y my-custom-scrollbar">
+												<div className="table-wrapper-scroll-y my-custom-scrollbar">
 													<Table className="tablesorter" responsive>
 														<thead className="text-primary">
 															<tr>
@@ -463,10 +489,20 @@ export default function CourseDetailInstructor(props) {
 							<h4 className="title title-up">Delete Student</h4>
 						</div>
 						<div className="modal-body">
-							<p>Are you sure You want to delete {DeleteStudent}</p>
+							<p>Are you sure You want to Delete Student</p>
 						</div>
 						<div className="modal-footer">
-							<Button color="danger" type="button" onClick={() => setDeleteModal(false)}>
+							<Button
+								color="danger"
+								type="button"
+								onClick={() => {
+									axios.delete(`Course/${id}/Student/${DeleteStudent}`).then((res) => {
+										console.log('DELETED');
+										console.group(res);
+									});
+									setDeleteModal(false);
+								}}
+							>
 								YES
 							</Button>
 							<Button color="default" type="button" onClick={() => setDeleteModal(false)}>
@@ -484,6 +520,25 @@ export default function CourseDetailInstructor(props) {
 						</div>
 						<div className="modal-body">
 							<Container>
+								<Row className="pb-2">
+									<Col>
+										<p>Title Name:</p>
+									</Col>
+									<Col>
+										<Input
+											placeholder="ClassRoom Name"
+											name="lname"
+											required
+											value={classRoomTitle}
+											onChange={(e) => {
+												setClassRoomTitle(e.target.value);
+											}}
+											className="text-dark border"
+											id="lname"
+											type="text"
+										/>
+									</Col>
+								</Row>
 								<Row>
 									<Col>
 										<p>Select Date</p>
@@ -506,7 +561,8 @@ export default function CourseDetailInstructor(props) {
 										{showStartTime && (
 											<TimeKeeper
 												time={StartTime}
-												onChange={(newTime) => setStartTime(newTime.formatted12)}
+												hour24Mode
+												onChange={(newTime) => setStartTime(newTime.formatted24)}
 												onDoneClick={() => setShowStartTime(false)}
 												switchToMinuteOnHourSelect
 											/>
@@ -525,7 +581,8 @@ export default function CourseDetailInstructor(props) {
 										{showEndTime && (
 											<TimeKeeper
 												time={EndTime}
-												onChange={(newTime) => setEndTime(newTime.formatted12)}
+												hour24Mode
+												onChange={(newTime) => setEndTime(newTime.formatted24)}
 												onDoneClick={() => setShowEndTime(false)}
 												switchToMinuteOnHourSelect
 											/>
@@ -540,6 +597,7 @@ export default function CourseDetailInstructor(props) {
 										<Button
 											className="btn-simple btn-icon btn-round float-right"
 											color="success"
+											onClick={submitVirtualClassRoom}
 											type="submit"
 										>
 											<FaPlus />
@@ -553,7 +611,13 @@ export default function CourseDetailInstructor(props) {
 								color="danger"
 								className="float-right"
 								type="button"
-								onClick={() => setAddVirtualClassRoom(false)}
+								onClick={() => {
+									setClassRoomTitle('');
+									setStartTime('12:00');
+									setEndTime('13:00');
+									setStartDate(new Date());
+									setAddVirtualClassRoom(false);
+								}}
 							>
 								Cancel
 							</Button>

@@ -13,16 +13,16 @@ function StudentHome() {
 
 			console.log('REQuest');
 			console.log(request);
-			setCourses(request.data.results);
+			setCourses(request.data);
 
 			return request;
 		}
-		console.log('token');
-		console.log(token);
+
 		fetchData();
 	}, []);
 	return (
 		<React.Fragment>
+			{console.log(token)}
 			<div className="wrapper">
 				<div className="page-header">
 					<div className="content">
@@ -33,9 +33,9 @@ function StudentHome() {
 							<Row>
 								{courses.map((card) => {
 									return (
-										<Col md="4" key={card.id}>
+										<Col md="4" key={card.courseId}>
 											<ClassCard
-												id={card.id}
+												id={card.courseId}
 												title={card.title}
 												instructor={card.instructor}
 												description={card.description}

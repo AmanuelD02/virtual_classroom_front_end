@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import classnames from 'classnames';
+import axios from '../../axios';
 
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from 'perfect-scrollbar';
@@ -48,6 +49,7 @@ let resourceList = [
 
 export default function CourseDetailStudent(props) {
 	let { id } = useParams();
+	const [ courseInfo, setCourseInfo ] = useState({});
 
 	const [ tabs, setTabs ] = React.useState(1);
 
@@ -71,9 +73,23 @@ export default function CourseDetailStudent(props) {
 			document.body.classList.toggle('profile-page');
 		};
 	}, []);
+
+	useEffect(
+		() => {
+			async function fetchData() {
+				const request = await axios.get(`Course/${id}`);
+				setCourseInfo(request.data);
+
+				return request;
+			}
+
+			fetchData();
+		},
+		[ id ]
+	);
+
 	return (
 		<React.Fragment>
-			{console.log(id)}
 			<div className="wrapper">
 				<div className="page-header">
 					<img alt="..." className="dots" src={require('assets/img/dots.png').default} />
@@ -81,13 +97,9 @@ export default function CourseDetailStudent(props) {
 					<Container className="align-items-center">
 						<Row>
 							<Col lg="6" md="6">
-								<h1 className="profile-title text-left">Mike Scheinder</h1>
+								<h1 className="profile-title text-left">{courseInfo.title}</h1>
 
-								<p className="profile-description">
-									Offices parties lasting outward nothing age few resolve. Impression to discretion
-									understood to we interested he excellence. Him remarkably use projection collecting.
-									Going about eat forty world has round miles.
-								</p>
+								<p className="profile-description">{courseInfo.description}</p>
 							</Col>
 							<Col className="ml-auto mr-auto" lg="4" md="6">
 								<Card className="card-coin card-plain" style={{ width: '38rem' }}>
