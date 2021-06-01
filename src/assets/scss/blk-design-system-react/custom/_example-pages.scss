@@ -312,13 +312,13 @@
     }
 
     .profile-title {
-      position: absolute;
-      top: 110px;
+      top: 50px;
       left: 60px;
     }
 
     .profile-description {
       margin-top: -30px;
+      padding-top: 20px;
       max-width: 450px;
       font-size: $font-size-base;
       line-height: 26px;
