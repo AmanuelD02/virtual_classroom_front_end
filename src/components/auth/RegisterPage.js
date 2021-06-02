@@ -166,32 +166,8 @@ export default function RegisterPage() {
 											<Form className="form" onSubmit={handleSubmit}>
 												<CardBody>
 													<div className="pb-3">
-														<div className="text-muted text-center  mb-3">
-															<small>Sign up with</small>
-														</div>
-														<div className="pl-5 ml-5 mb-2">
-															<Button
-																className="btn-neutral btn-icon"
-																color="default"
-																href="#pablo"
-																onClick={(e) => {
-																	e.preventDefault();
-																	console.log('Google');
-																}}
-															>
-																<span className="btn-inner--icon">
-																	<img
-																		alt="..."
-																		src={require('assets/img/google.svg').default}
-																	/>
-																</span>
-															</Button>
-															<span className="btn-inner--text text-muted  display-4 pl-2">
-																Google
-															</span>
-														</div>
 														<div className="text-center text-muted mb-4">
-															<small>Or sign up with credentials</small>
+															<small className="display-4">sign up</small>
 														</div>
 													</div>
 
