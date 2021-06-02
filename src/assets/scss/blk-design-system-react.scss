@@ -29,6 +29,10 @@ $asset-base-path: '../../../../assets' !default;
 @import "blk-design-system-react/custom/mixins";
 @import "~bootstrap/scss/mixins";
 
+// video component style
+
+@import "~react-image-gallery/styles/scss/image-gallery.scss";
+
 // Bootstrap components
 
 @import "~bootstrap/scss/root";

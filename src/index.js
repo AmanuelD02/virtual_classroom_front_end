@@ -34,7 +34,7 @@ ReactDOM.render(
 			{/* Student Routes */}
 			<ProtectedStudentRoute exact path="/studenthome" component={StudentHome} />
 			<ProtectedStudentRoute exact path="/studentCourse/:id" component={CourseDetailStudent} />
-			{/* Insttuctor Routes */}
+			{/* Instuctor Routes */}
 			<ProtectedInstructorRoute exact path="/instructorhome" component={InstructorHome} />
 			<ProtectedInstructorRoute exact path="/instructorCourse/:id" component={CourseDetailInstructor} />
 			<ProtectedInstructorRoute exact path="/CreateClass" component={CreateClass} />
