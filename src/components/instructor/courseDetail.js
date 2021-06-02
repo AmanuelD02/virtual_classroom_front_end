@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router';
+import { useHistory } from 'react-router-dom';
 import classnames from 'classnames';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -7,6 +9,7 @@ import TimeKeeper from 'react-timekeeper';
 import PerfectScrollbar from 'perfect-scrollbar';
 import { FaTrashAlt, FaPlus } from 'react-icons/fa';
 import { ImCross } from 'react-icons/im';
+import swal from 'sweetalert';
 
 import axios from '../../axios';
 
@@ -36,8 +39,6 @@ import {
 } from 'reactstrap';
 
 import '../../assets/css/courseDetail.css';
-import { useParams } from 'react-router';
-import { useHistory } from 'react-router-dom';
 
 // core components
 
@@ -49,13 +50,7 @@ export default function CourseDetailInstructor(props) {
 
 	const [ courseInfo, setCourseInfo ] = useState({});
 	const [ studentList, setStudentList ] = useState([]);
-	const [ resourceList, setResourceList ] = useState([
-		{
-			id: 1,
-			filename: 'C# Essentials',
-			downloadLink: ''
-		}
-	]);
+	const [ resourceList, setResourceList ] = useState([]);
 	const [ classRoomList, setClassRoomList ] = useState([]);
 
 	const [ classRoomTitle, setClassRoomTitle ] = useState('');
@@ -67,14 +62,15 @@ export default function CourseDetailInstructor(props) {
 	const [ showEndTime, setShowEndTime ] = useState(false);
 
 	const [ tabs, setTabs ] = React.useState(1);
-	const [ DemoModal, setDemoModal ] = React.useState(false);
+	const [ ResourceUploadModal, setResourceUploadModal ] = React.useState(false);
 	const [ DeleteStudent, setDeleteStudent ] = React.useState(0);
-	const [ DeleteModal, setDeleteModal ] = React.useState(false);
+	const [ DeleteStudentModal, setDeleteStudentModal ] = React.useState(false);
 	const [ addVirtualClassRoom, setAddVirtualClassRoom ] = React.useState(false);
 
 	const [ studentEmail, setStudentEmail ] = useState('');
 	const [ studentEmailNotification, setStudentEmailNotification ] = useState({ title: '', msg: '' });
 
+	const [ resourceToUpload, setResourceToUpload ] = useState(null);
 	// COURSE DETAILS
 	useEffect(
 		() => {
@@ -102,27 +98,17 @@ export default function CourseDetailInstructor(props) {
 		},
 		[ id ]
 	);
-
-	// useEffect(
-	// 	() => {
-	// 		async function fetchData() {
-	// 			const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
-	// 			const request = await Axios.get(`http://localhost:51044/api/Courses​/${id}​/Resources`, {
-	// 				headers: {
-	// 					responseType: 'blob',
-	// 					Authorization: `Bearer ${token}`
-	// 				}
-	// 			});
-
-	// 			console.log('ReQuest Resources');
-	// 			console.log(request);
-	// 			setResourceList(request.data);
-	// 			return request;
-	// 		}
-	// 		fetchData();
-	// 	},
-	// 	[ id ]
-	// );
+	// FEtch Resources
+	useEffect(
+		() => {
+			axios.get(`Courses/${id}/Resources`).then((res) => {
+				console.log('REsource');
+				console.log(res);
+				setResourceList(res.data);
+			});
+		},
+		[ id ]
+	);
 
 	// FETCH CLASSROOMS
 	useEffect(
@@ -168,7 +154,15 @@ export default function CourseDetailInstructor(props) {
 
 	function submitVirtualClassRoom() {
 		if (new Date(`01/01/2000 ${StartTime}`) >= new Date(`01/01/2000 ${EndTime}`)) {
+			swal({
+				title: 'Invalid Time',
+				text: 'Check startTime',
+				icon: 'warning',
+				dangerMode: true
+			});
+
 			console.log('ERROR');
+
 			console.log(StartTime + '  ' + EndTime);
 		} else {
 			console.log('SENDING..');
@@ -191,11 +185,31 @@ export default function CourseDetailInstructor(props) {
 					console.log(res.data);
 				})
 				.catch((e) => {
-					console.log('E');
-					console.log(e);
+					swal({
+						title: 'Error',
+						text: e.response.data.title,
+						icon: 'warning',
+						dangerMode: true
+					});
 				});
 		}
 	}
+	// Resource Upload
+	function uploadResource() {
+		const data = new FormData();
+		data.append('file', resourceToUpload);
+		axios
+			.post(`/Courses/${id}/Resources`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			})
+			.then((res) => {
+				setResourceUploadModal(false);
+				console.log(res);
+			});
+	}
+
 	// UI
 	React.useEffect(() => {
 		if (navigator.platform.indexOf('Win') > -1) {
@@ -220,6 +234,7 @@ export default function CourseDetailInstructor(props) {
 
 	return (
 		<React.Fragment>
+			{console.log(localStorage.getItem('REACT_TOKEN_AUTH'))}
 			<div className="wrapper">
 				<div className="page-header">
 					<img alt="..." className="dots" src={require('assets/img/dots.png').default} />
@@ -298,6 +313,11 @@ export default function CourseDetailInstructor(props) {
 																		<FaPlus />
 																	</Button>
 																</th>
+															</tr>
+															<tr>
+																<td>Name:</td>
+																<td>Date</td>
+																<td>Time</td>
 															</tr>
 														</thead>
 														<tbody>
@@ -415,7 +435,7 @@ export default function CourseDetailInstructor(props) {
 																			<ImCross
 																				color="red"
 																				onClick={(e) => {
-																					setDeleteModal(true);
+																					setDeleteStudentModal(true);
 																					setDeleteStudent(st.id);
 																				}}
 																			/>
@@ -444,7 +464,7 @@ export default function CourseDetailInstructor(props) {
 											size={28}
 											onClick={() => {
 												console.log('CLICKED PLUS');
-												setDemoModal(true);
+												setResourceUploadModal(true);
 											}}
 										/>
 									</Col>
@@ -453,11 +473,60 @@ export default function CourseDetailInstructor(props) {
 								<ListGroup>
 									{resourceList.map((rs) => {
 										return (
-											<ListGroupItem color="info" key={rs.id} className="justify-content-between">
-												{rs.filename}
+											<ListGroupItem
+												color="info"
+												key={rs.resourceId}
+												className="justify-content-between"
+											>
+												<span
+													onClick={(e) => {
+														axios
+															.get(`Courses/${id}/Resources/${rs.resourceId}/Download`, {
+																responseType: 'blob'
+															})
+															.then((response) => {
+																const url = window.URL.createObjectURL(
+																	new Blob([ response.data ])
+																);
+																const link = document.createElement('a');
+																link.href = url;
+																link.setAttribute('download', rs.fileName); //or any other extension
+																document.body.appendChild(link);
+																link.click();
+															});
+													}}
+												>
+													{rs.fileName}
+												</span>
 												{'   '}
 												<span className="mr-auto">
-													<FaTrashAlt color="red" />{' '}
+													<FaTrashAlt
+														color="red"
+														onClick={(e) => {
+															swal({
+																title: 'Are you sure?',
+																text:
+																	'Once deleted, you will not be able to recover this ',
+																icon: 'warning',
+																buttons: true,
+																dangerMode: true
+															}).then((willDelete) => {
+																if (willDelete) {
+																	console.log('WILL DELETE');
+																	axios
+																		.delete(
+																			`Courses/${id}/Resources/${rs.resourceId}`
+																		)
+																		.then((res) => {
+																			console.log(res);
+																		});
+																}
+															});
+														}}
+													/>{' '}
+												</span>
+												<span className="text-muted">
+													Created at {new Date(rs.creationDate).toDateString()}
 												</span>
 											</ListGroupItem>
 										);
@@ -467,31 +536,41 @@ export default function CourseDetailInstructor(props) {
 						</Row>
 					</Container>
 
-					<Modal isOpen={DemoModal} toggle={() => setDemoModal(false)}>
-						<div className="modal-header justify-content-center">
-							<button className="close" onClick={() => setDemoModal(false)}>
-								<i className="tim-icons icon-simple-remove" />
-							</button>
-							<h4 className="title title-up">Add Resource</h4>
-						</div>
-						<div className="modal-body">
-							<p>
-								<Input type="file" name="file" id="exampleFile" />
-							</p>
-						</div>
-						<div className="modal-footer">
-							<Button color="default" type="button">
-								ADD
-							</Button>
-							<Button color="danger" type="button" onClick={() => setDemoModal(false)}>
-								Cancel
-							</Button>
-						</div>
+					<Modal isOpen={ResourceUploadModal} toggle={() => setResourceUploadModal(false)}>
+						<Form onSubmit={uploadResource}>
+							<div className="modal-header justify-content-center">
+								<button className="close" onClick={() => setResourceUploadModal(false)}>
+									<i className="tim-icons icon-simple-remove" />
+								</button>
+								<h4 className="title title-up">Add Resource</h4>
+							</div>
+							<div className="modal-body">
+								<p>
+									<Input
+										type="file"
+										required
+										onChange={(e) => {
+											setResourceToUpload(e.target.files[0]);
+										}}
+										name="file"
+										id="exampleFile"
+									/>
+								</p>
+							</div>
+							<div className="modal-footer">
+								<Button color="default" type="submit">
+									ADD
+								</Button>
+								<Button color="danger" type="button" onClick={() => setResourceUploadModal(false)}>
+									Cancel
+								</Button>
+							</div>
+						</Form>
 					</Modal>
 
-					<Modal isOpen={DeleteModal} toggle={() => setDeleteModal(false)}>
+					<Modal isOpen={DeleteStudentModal} toggle={() => setDeleteStudentModal(false)}>
 						<div className="modal-header justify-content-center">
-							<button className="close" onClick={() => setDeleteModal(false)}>
+							<button className="close" onClick={() => setDeleteStudentModal(false)}>
 								<i className="tim-icons icon-simple-remove" />
 							</button>
 							<h4 className="title title-up">Delete Student</h4>
@@ -508,12 +587,12 @@ export default function CourseDetailInstructor(props) {
 										console.log('DELETED');
 										console.group(res);
 									});
-									setDeleteModal(false);
+									setDeleteStudentModal(false);
 								}}
 							>
 								YES
 							</Button>
-							<Button color="default" type="button" onClick={() => setDeleteModal(false)}>
+							<Button color="default" type="button" onClick={() => setDeleteStudentModal(false)}>
 								NO
 							</Button>
 						</div>

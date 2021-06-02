@@ -1,5 +1,5 @@
 import '../../assets/css/createCourse.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { FormGroup, Form, Input, Row, Col, Container, Card, CardBody, CardFooter, Button, Label } from 'reactstrap';
 import axios from '../../axios';

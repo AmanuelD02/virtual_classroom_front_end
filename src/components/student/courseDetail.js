@@ -29,29 +29,12 @@ import { useParams } from 'react-router';
 
 let ps = null;
 
-let resourceList = [
-	{
-		id: 1,
-		filename: 'C# Essentials',
-		downloadLink: ''
-	},
-	{
-		id: 2,
-		filename: 'Intorduction to C#',
-		downloadLink: ''
-	},
-	{
-		id: 3,
-		filename: 'Advanced C# ',
-		downloadLink: ''
-	}
-];
-
 export default function CourseDetailStudent(props) {
 	let { id } = useParams();
 	const [ courseInfo, setCourseInfo ] = useState({});
 	const [ classRoomList, setClassRoomList ] = useState([]);
 	const [ tabs, setTabs ] = React.useState(1);
+	const [ resourceList, setResourceList ] = useState([]);
 
 	React.useEffect(() => {
 		if (navigator.platform.indexOf('Win') > -1) {
@@ -73,7 +56,7 @@ export default function CourseDetailStudent(props) {
 			document.body.classList.toggle('profile-page');
 		};
 	}, []);
-
+	// Course Detail
 	useEffect(
 		() => {
 			async function fetchData() {
@@ -99,6 +82,18 @@ export default function CourseDetailStudent(props) {
 				return request;
 			}
 			fetchData();
+		},
+		[ id ]
+	);
+
+	// FEtch Resources
+	useEffect(
+		() => {
+			axios.get(`Courses/${id}/Resources`).then((res) => {
+				console.log('REsource');
+				console.log(res);
+				setResourceList(res.data);
+			});
 		},
 		[ id ]
 	);
@@ -197,23 +192,58 @@ export default function CourseDetailStudent(props) {
 														<tbody>
 															{resourceList.map((rs) => {
 																return (
-																	<tr>
+																	<tr key={rs.resourceId}>
 																		<td
 																			color="info"
 																			width="100%"
 																			key={rs.id}
 																			className="justify-content-between p-3 border-bottom border-warning mw-100"
 																		>
-																			{rs.filename}
+																			{rs.fileName}
+																		</td>
+																		<td>
+																			<span className="text-muted">
+																				Created at{' '}
+																				{new Date(rs.creationDate).toDateString()}
+																			</span>
 																		</td>
 																		<td
 																			color="info"
 																			width="100%"
-																			key={rs.id}
 																			className="justify-content-between p-3 border-bottom border-warning mw-100"
 																		>
 																			<span className="mr-auto">
-																				<FaDownload color="green" />{' '}
+																				<FaDownload
+																					color="green"
+																					onClick={(e) => {
+																						axios
+																							.get(
+																								`Courses/${id}/Resources/${rs.resourceId}/Download`,
+																								{
+																									responseType: 'blob'
+																								}
+																							)
+																							.then((response) => {
+																								const url = window.URL.createObjectURL(
+																									new Blob([
+																										response.data
+																									])
+																								);
+																								const link = document.createElement(
+																									'a'
+																								);
+																								link.href = url;
+																								link.setAttribute(
+																									'download',
+																									rs.fileName
+																								);
+																								document.body.appendChild(
+																									link
+																								);
+																								link.click();
+																							});
+																					}}
+																				/>{' '}
 																			</span>
 																		</td>
 																	</tr>

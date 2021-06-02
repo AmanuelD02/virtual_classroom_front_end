@@ -1,23 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 // reactstrap components
-import {
-	Button,
-	Collapse,
-	DropdownToggle,
-	DropdownMenu,
-	DropdownItem,
-	UncontrolledDropdown,
-	NavbarBrand,
-	Navbar,
-	NavItem,
-	NavLink,
-	Nav,
-	Container,
-	Row,
-	Col,
-	UncontrolledTooltip
-} from 'reactstrap';
+import { Button, Collapse, NavbarBrand, Navbar, NavItem, Nav, Container, Row, Col } from 'reactstrap';
 import { FaSignInAlt } from 'react-icons/fa';
 import { FaSignOutAlt } from 'react-icons/fa';
 

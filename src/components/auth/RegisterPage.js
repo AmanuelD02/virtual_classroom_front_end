@@ -85,6 +85,7 @@ export default function RegisterPage() {
 						history.push('/login');
 					})
 					.catch((e) => {
+						setFormErrors({ title: `Error`, msg: e.response.data.title });
 						console.log('ERROR');
 						console.log(e);
 					});
@@ -102,6 +103,7 @@ export default function RegisterPage() {
 						history.push('/login');
 					})
 					.catch((e) => {
+						setFormErrors({ title: `Error`, msg: e.response.data.title });
 						console.log('ERROR');
 						console.log(e);
 					});

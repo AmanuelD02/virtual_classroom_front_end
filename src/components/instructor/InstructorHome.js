@@ -3,45 +3,6 @@ import { Container, Row, Col } from 'reactstrap';
 import ClassCard from '../ClassCard';
 import axios from '../../axios';
 
-const sampleData = [
-	{
-		id: 1,
-		title: 'Web Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'HTML5/CSS3/JS'
-	},
-	{
-		id: 2,
-		title: 'Mobile Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'Android with Kotlin'
-	},
-	{
-		id: 3,
-		title: 'Networking',
-		instructor: 'Fitsum Alemu',
-		description: 'Networking '
-	},
-	{
-		id: 4,
-		title: 'Web Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'HTML5/CSS3/JS'
-	},
-	{
-		id: 5,
-		title: 'Mobile Programming',
-		instructor: 'Fitsum Alemu',
-		description: 'Android with Kotlin'
-	},
-	{
-		id: 6,
-		title: 'Networking',
-		instructor: 'Fitsum Alemu',
-		description: 'Networking '
-	}
-];
-
 function InstructorHome() {
 	const [ courses, setCourses ] = useState([]);
 

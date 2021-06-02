@@ -13,6 +13,7 @@ import {
 	CardFooter,
 	CardImg,
 	CardTitle,
+	UncontrolledAlert,
 	Label,
 	FormGroup,
 	Form,
@@ -32,6 +33,8 @@ export default function RegisterPage() {
 	const [ emailFocus, setEmailFocus ] = React.useState(false);
 	const [ passwordFocus, setPasswordFocus ] = React.useState(false);
 
+	// Form Error
+	const [ formErrors, setFormErrors ] = useState({ title: '', msg: '' });
 	//  Login Input Hooks
 	const [ values, setValues ] = useState({
 		email: '',
@@ -63,9 +66,7 @@ export default function RegisterPage() {
 				userName: values.email,
 				password: values.password
 			})
-			.then((res) => {
-				return res.data;
-			})
+			.then((res) => res.data)
 			.then((res) => {
 				localStorage.setItem('REACT_TOKEN_AUTH', res.token);
 				if (res.role === 'Student') {
@@ -80,6 +81,10 @@ export default function RegisterPage() {
 
 					history.push('/instructorhome');
 				}
+			})
+			.catch((e) => {
+				setFormErrors({ title: `Error`, msg: e.response.data.title });
+				console.log(e.response.data);
 			});
 	};
 	if (localStorage.getItem('user') && localStorage.getItem('userType') === 'instructor') {
@@ -120,6 +125,22 @@ export default function RegisterPage() {
 														<div className="text-muted text-center  mb-3">
 															<small>Sign in with</small>
 														</div>
+
+														<UncontrolledAlert
+															className="alert-with-icon"
+															isOpen={formErrors.title}
+															toggle={() => setFormErrors({ title: '', msg: '' })}
+															color="danger"
+														>
+															<span
+																data-notify="icon"
+																className="tim-icons icon-support-17"
+															/>
+															<span>
+																<b>{formErrors.title}</b> {':  '}
+																{formErrors.msg}
+															</span>
+														</UncontrolledAlert>
 														<div className="pl-5 ml-5 mb-2">
 															<Button
 																className="btn-neutral btn-icon"
