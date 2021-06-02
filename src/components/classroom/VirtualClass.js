@@ -133,7 +133,7 @@ function VirtualClassRoom(props){
                 
 
                 // TODO: Improve this implementation
-                myPeer = new Peer(undefined, {host: "/", port: 3001});
+                myPeer = new Peer(undefined);
 
                 myPeer.on('open', id => {
                     console.log("Peer is open");
@@ -217,7 +217,7 @@ function VirtualClassRoom(props){
             connection.start().then(() => {
 
                 
-                screenPeer = new Peer(undefined, {host: "/", port: 3001});
+                screenPeer = new Peer(undefined);
 
                 screenPeer.on('open', id => {
                     console.log("Peer is open");
