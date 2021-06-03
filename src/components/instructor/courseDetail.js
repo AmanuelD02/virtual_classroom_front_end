@@ -17,7 +17,6 @@ import axios from '../../axios';
 import {
 	Button,
 	Card,
-	CardHeader,
 	UncontrolledAlert,
 	CardBody,
 	Label,
@@ -47,11 +46,13 @@ let ps = null;
 export default function CourseDetailInstructor(props) {
 	let { id } = useParams();
 	const history = useHistory();
+	const [ ForceRender, setForceRender ] = useState(0);
 
 	const [ courseInfo, setCourseInfo ] = useState({});
 	const [ studentList, setStudentList ] = useState([]);
 	const [ resourceList, setResourceList ] = useState([]);
 	const [ classRoomList, setClassRoomList ] = useState([]);
+	const [ attendanceList, setAttendanceList ] = useState([]);
 
 	const [ classRoomTitle, setClassRoomTitle ] = useState('');
 	const [ startDate, setStartDate ] = useState(new Date());
@@ -65,12 +66,15 @@ export default function CourseDetailInstructor(props) {
 	const [ ResourceUploadModal, setResourceUploadModal ] = React.useState(false);
 	const [ DeleteStudent, setDeleteStudent ] = React.useState(0);
 	const [ DeleteStudentModal, setDeleteStudentModal ] = React.useState(false);
+	const [ attendanceModal, setAttendanceModal ] = useState(false);
 	const [ addVirtualClassRoom, setAddVirtualClassRoom ] = React.useState(false);
 
 	const [ studentEmail, setStudentEmail ] = useState('');
 	const [ studentEmailNotification, setStudentEmailNotification ] = useState({ title: '', msg: '' });
 
 	const [ resourceToUpload, setResourceToUpload ] = useState(null);
+	//create your forceUpdate hook
+
 	// COURSE DETAILS
 	useEffect(
 		() => {
@@ -96,7 +100,7 @@ export default function CourseDetailInstructor(props) {
 			}
 			fetchData();
 		},
-		[ id ]
+		[ id, ForceRender ]
 	);
 	// FEtch Resources
 	useEffect(
@@ -107,7 +111,7 @@ export default function CourseDetailInstructor(props) {
 				setResourceList(res.data);
 			});
 		},
-		[ id ]
+		[ id, ForceRender ]
 	);
 
 	// FETCH CLASSROOMS
@@ -121,7 +125,7 @@ export default function CourseDetailInstructor(props) {
 			}
 			fetchData();
 		},
-		[ id ]
+		[ id, ForceRender ]
 	);
 
 	function AddStudent(e) {
@@ -129,24 +133,33 @@ export default function CourseDetailInstructor(props) {
 
 		async function fetchStudentId() {
 			console.log('Student Email is ' + studentEmail);
-			const request = await axios.get(`authenticate/Students/StudentEmail/${studentEmail}`);
-			const res = await request.data;
+			try {
+				const request = await axios.get(`authenticate/Students/StudentEmail/${studentEmail}`);
+				const res = await request.data;
 
-			const req = await axios
-				.post(`Course/student/${id}`, {
-					studentId: res.id,
-					courseId: id
-				})
-				.then((res) => {
-					setStudentEmail('');
-					setStudentEmailNotification({ title: 'Success', msg: 'Student Added to Course!' });
-
-					console.log(res);
-				})
-				.catch((e) => {
-					console.log(e);
-					setStudentEmailNotification({ title: 'Error', msg: 'Student Added to Course!' });
+				const req = await axios
+					.post(`Course/student/${id}`, {
+						studentId: res.id,
+						courseId: id
+					})
+					.then((res) => {
+						setStudentEmail('');
+						setStudentEmailNotification({ title: 'Success', msg: 'Student Added to Course!' });
+						setForceRender(ForceRender + 1);
+						console.log(res);
+					})
+					.catch((e) => {
+						setStudentEmailNotification({
+							title: `${Object.keys(e.response.data.errors)[0]}`,
+							msg: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+						});
+					});
+			} catch (e) {
+				setStudentEmailNotification({
+					title: 'Error',
+					msg: 'Student Not Found'
 				});
+			}
 		}
 
 		fetchStudentId();
@@ -181,6 +194,8 @@ export default function CourseDetailInstructor(props) {
 					setEndTime('13:00');
 					setStartDate(new Date());
 					setAddVirtualClassRoom(false);
+					setForceRender(ForceRender + 1);
+
 					console.log('RESPONSE IS');
 					console.log(res.data);
 				})
@@ -206,6 +221,8 @@ export default function CourseDetailInstructor(props) {
 			})
 			.then((res) => {
 				setResourceUploadModal(false);
+				setForceRender(ForceRender + 1);
+
 				console.log(res);
 			});
 	}
@@ -340,19 +357,52 @@ export default function CourseDetailInstructor(props) {
 																		</td>
 
 																		<td>
-																			<Button
-																				className=" btn-simple btn-round"
-																				width="20px"
-																				onClick={(e) => {
-																					history.push(
-																						`/join_classroom/${id}`
-																					);
-																				}}
-																				color="success"
-																				type="button"
-																			>
-																				Join
-																			</Button>
+																			{new Date() >=
+																				new Date(clas.date).setHours(
+																					clas.endTime.substr(0, 2)
+																				) && (
+																				<Button
+																					className=" btn-simple btn-round"
+																					width="20px"
+																					color="success"
+																					onClick={(e) => {
+																						axios
+																							.get(
+																								`Course/${id}/Classrooms/${clas.classRoomId}/attendance`
+																							)
+																							.then((res) => {
+																								setAttendanceList(
+																									res.data
+																								);
+																								setAttendanceModal(
+																									true
+																								);
+																							});
+																					}}
+																					type="button"
+																				>
+																					Attendace
+																				</Button>
+																			)}
+
+																			{new Date() <=
+																				new Date(clas.date).setHours(
+																					clas.endTime.substr(0, 2)
+																				) && (
+																				<Button
+																					className=" btn-simple btn-round"
+																					width="20px"
+																					onClick={(e) => {
+																						history.push(
+																							`/join_classroom/${clas.classRoomId}`
+																						);
+																					}}
+																					color="success"
+																					type="button"
+																				>
+																					Join
+																				</Button>
+																			)}
 																		</td>
 																		<td>
 																			<Button
@@ -360,9 +410,28 @@ export default function CourseDetailInstructor(props) {
 																				width="20px"
 																				color="danger"
 																				onClick={(e) => {
-																					axios.delete(
-																						`Course/${id}/Classrooms/${clas.classRoomId}`
-																					);
+																					swal({
+																						title:
+																							'Are you sure You want to Delete?',
+																						text: ' ',
+																						icon: 'warning',
+																						buttons: true,
+																						dangerMode: true
+																					}).then((willDelete) => {
+																						if (willDelete) {
+																							axios
+																								.delete(
+																									`Course/${id}/Classrooms/${clas.classRoomId}`
+																								)
+																								.then((res) => {
+																									setForceRender(
+																										ForceRender + 1
+																									);
+
+																									console.log(res);
+																								});
+																						}
+																					});
 																				}}
 																				type="button"
 																			>
@@ -518,6 +587,8 @@ export default function CourseDetailInstructor(props) {
 																			`Courses/${id}/Resources/${rs.resourceId}`
 																		)
 																		.then((res) => {
+																			setForceRender(ForceRender + 1);
+
 																			console.log(res);
 																		});
 																}
@@ -586,6 +657,7 @@ export default function CourseDetailInstructor(props) {
 									axios.delete(`Course/${id}/Student/${DeleteStudent}`).then((res) => {
 										console.log('DELETED');
 										console.group(res);
+										setForceRender(ForceRender + 1);
 									});
 									setDeleteStudentModal(false);
 								}}
@@ -708,6 +780,30 @@ export default function CourseDetailInstructor(props) {
 							>
 								Cancel
 							</Button>
+						</div>
+					</Modal>
+					<Modal isOpen={attendanceModal} toggle={() => setAttendanceModal(false)}>
+						<div className="modal-header justify-content-center">
+							<button className="close" onClick={() => setAttendanceModal(false)}>
+								<i className="tim-icons icon-simple-remove" />
+							</button>
+							<h4 className="title title-up">Add Virtual ClassRoom</h4>
+						</div>
+						<div className="modal-body">
+							<Container>
+								<Row>List Of Students</Row>
+								<Row>
+									<ListGroup>
+										{attendanceList.map((st) => {
+											return (
+												<ListGroupItem>
+													{st.name} {st.email}
+												</ListGroupItem>
+											);
+										})}
+									</ListGroup>
+								</Row>
+							</Container>
 						</div>
 					</Modal>
 				</div>
