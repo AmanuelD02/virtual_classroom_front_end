@@ -125,9 +125,9 @@ export default function RegisterPage() {
 											<Form className="form" onSubmit={handleSubmit}>
 												<CardBody>
 													<div className="pb-3">
-														<div className="text-muted text-center  mb-3">
+														{/* <div className="text-muted text-center  mb-3">
 															<small>Sign in with</small>
-														</div>
+														</div> */}
 
 														<UncontrolledAlert
 															className="alert-with-icon"
@@ -144,27 +144,8 @@ export default function RegisterPage() {
 																{formErrors.msg}
 															</span>
 														</UncontrolledAlert>
-														<div className="pl-5 ml-5 mb-2">
-															<Button
-																className="btn-neutral btn-icon"
-																color="default"
-																href="#pablo"
-																onClick={(e) => {
-																	e.preventDefault();
-																	console.log('Google');
-																}}
-															>
-																<span className="btn-inner--icon">
-																	<img
-																		alt="..."
-																		src={require('assets/img/google.svg').default}
-																	/>
-																</span>
-															</Button>
-															<span className=" text-muted display-4 pl-2">Google</span>
-														</div>
 														<div className="text-center text-muted mb-4">
-															<small>Or sign in with credentials</small>
+															<small className="display-4">Enter Credentials</small>
 														</div>
 													</div>
 

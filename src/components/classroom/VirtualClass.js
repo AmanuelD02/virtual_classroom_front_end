@@ -130,10 +130,12 @@ function VirtualClassRoom(props){
 
             connection.start().then(function () {
                 configure_connection(connection);
-                
+                connection.onclose(()=> {stream.getTracks().forEach(function(track) {
+                    track.stop();
+                  })})
 
                 // TODO: Improve this implementation
-                myPeer = new Peer(undefined);
+                myPeer = new Peer(undefined, {host: '/', port: 3001});
 
                 myPeer.on('open', id => {
                     console.log("Peer is open");
@@ -208,21 +210,30 @@ function VirtualClassRoom(props){
 
     function createScreen(){
         navigator.mediaDevices.getDisplayMedia().then((screenStream)=>{
-            let connection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
+            let screenConnection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
+            let stillAlive = true;
             screenStream.getVideoTracks()[0].onended = async function () {
-                // doWhatYouNeedToDo();
-                await connection.stop();
+                stillAlive = false;
+                await screenConnection.stop();
             };
             let screenPeer;
-            connection.start().then(() => {
-
+            screenConnection.start().then(() => {
+                // TODO: find a way to close sharing;
+                connection.onclose(async () => {
+                    await screenConnection.stop()
+                    if(stillAlive){
+                        screenStream.getTracks().forEach(function(track) {
+                            track.stop();
+                        })
+                    }
+                })
                 
-                screenPeer = new Peer(undefined);
+                screenPeer = new Peer(undefined, {host: '/', port: 3001});
 
                 screenPeer.on('open', id => {
                     console.log("Peer is open");
                     addNewUser([id, {Role: "Instructor", HasAudio: false, HasVideo: false, UserName: "My Screen Share" }]);
-                    connection.invoke("ScreenShare", id, classID);
+                    screenConnection.invoke("ScreenShare", id, classID);
                     addStream(screenStream, id);
                 });
                 screenPeer.on('call', call => {
@@ -237,7 +248,7 @@ function VirtualClassRoom(props){
                 })
             });
 
-            connection.on('UserConnected', user => {
+            screenConnection.on('UserConnected', user => {
                 user = JSON.parse(user);
                 let userID = user.CallId;
                 console.log("Server Reports success")

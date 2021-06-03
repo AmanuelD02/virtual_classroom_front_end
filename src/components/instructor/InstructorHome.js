@@ -31,7 +31,7 @@ function InstructorHome() {
 							<Row>
 								{courses.map((card) => {
 									return (
-										<Col md="4" key={card.courseId}>
+										<Col md="4" key={card.courseId} className="mx-auto">
 											<ClassCard
 												id={card.courseId}
 												title={card.title}
