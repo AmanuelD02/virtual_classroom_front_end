@@ -543,62 +543,72 @@ export default function CourseDetailInstructor(props) {
 									{resourceList.map((rs) => {
 										return (
 											<ListGroupItem
-												color="info"
+												color="white"
 												key={rs.resourceId}
-												className="justify-content-between"
+												className="justify-content-between mt-2"
 											>
-												<span
-													onClick={(e) => {
-														axios
-															.get(`Courses/${id}/Resources/${rs.resourceId}/Download`, {
-																responseType: 'blob'
-															})
-															.then((response) => {
-																const url = window.URL.createObjectURL(
-																	new Blob([ response.data ])
-																);
-																const link = document.createElement('a');
-																link.href = url;
-																link.setAttribute('download', rs.fileName); //or any other extension
-																document.body.appendChild(link);
-																link.click();
-															});
-													}}
-												>
-													{rs.fileName}
-												</span>
-												{'   '}
-												<span className="mr-auto">
-													<FaTrashAlt
-														color="red"
-														onClick={(e) => {
-															swal({
-																title: 'Are you sure?',
-																text:
-																	'Once deleted, you will not be able to recover this ',
-																icon: 'warning',
-																buttons: true,
-																dangerMode: true
-															}).then((willDelete) => {
-																if (willDelete) {
-																	console.log('WILL DELETE');
-																	axios
-																		.delete(
-																			`Courses/${id}/Resources/${rs.resourceId}`
-																		)
-																		.then((res) => {
-																			setForceRender(ForceRender + 1);
+												<Row>
+													<Col>
+														<span
+															onClick={(e) => {
+																axios
+																	.get(
+																		`Courses/${id}/Resources/${rs.resourceId}/Download`,
+																		{
+																			responseType: 'blob'
+																		}
+																	)
+																	.then((response) => {
+																		const url = window.URL.createObjectURL(
+																			new Blob([ response.data ])
+																		);
+																		const link = document.createElement('a');
+																		link.href = url;
+																		link.setAttribute('download', rs.fileName); //or any other extension
+																		document.body.appendChild(link);
+																		link.click();
+																	});
+															}}
+														>
+															{rs.fileName}
+														</span>
+													</Col>
+													<Col>
+														<span className="text-muted">
+															Created at {new Date(rs.creationDate).toDateString()}
+														</span>
+													</Col>
+													<Col sm="1">
+														<span className="ml-auto">
+															<FaTrashAlt
+																color="red"
+																onClick={(e) => {
+																	swal({
+																		title: 'Are you sure?',
+																		text:
+																			'Once deleted, you will not be able to recover this ',
+																		icon: 'warning',
+																		buttons: true,
+																		dangerMode: true
+																	}).then((willDelete) => {
+																		if (willDelete) {
+																			console.log('WILL DELETE');
+																			axios
+																				.delete(
+																					`Courses/${id}/Resources/${rs.resourceId}`
+																				)
+																				.then((res) => {
+																					setForceRender(ForceRender + 1);
 
-																			console.log(res);
-																		});
-																}
-															});
-														}}
-													/>{' '}
-												</span>
-												<span className="text-muted">
-													Created at {new Date(rs.creationDate).toDateString()}
-												</span>
+																					console.log(res);
+																				});
+																		}
+																	});
+																}}
+															/>{' '}
+														</span>
+													</Col>
+												</Row>
 											</ListGroupItem>
 										);
 									})}
