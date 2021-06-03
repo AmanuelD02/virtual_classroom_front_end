@@ -83,8 +83,11 @@ export default function RegisterPage() {
 				}
 			})
 			.catch((e) => {
-				setFormErrors({ title: `Error`, msg: e.response.data.title });
 				console.log(e.response.data);
+				setFormErrors({
+					title: `${Object.keys(e.response.data.errors)[0]}`,
+					msg: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+				});
 			});
 	};
 	if (localStorage.getItem('user') && localStorage.getItem('userType') === 'instructor') {

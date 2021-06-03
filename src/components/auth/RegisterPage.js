@@ -65,12 +65,11 @@ export default function RegisterPage() {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		if (values.password.length <= 4) {
-			console.log('WEAK PSD');
+		if (values.password.length <= 8) {
 			setFormErrors({ title: `Password`, msg: `Weak Password` });
 		} else if (values.confirmPassword === values.password) {
 			setFormErrors({ title: '', msg: '' });
-			console.log(values);
+
 			if (values.userType === 'student') {
 				axios
 					.post('authenticate/Students/CreateStudent', {
@@ -80,14 +79,13 @@ export default function RegisterPage() {
 						password: values.password
 					})
 					.then((res) => {
-						console.log('Student');
-						console.log(res);
 						history.push('/login');
 					})
 					.catch((e) => {
-						setFormErrors({ title: `Error`, msg: e.response.data.title });
-						console.log('ERROR');
-						console.log(e);
+						setFormErrors({
+							title: `${Object.keys(e.response.data.errors)[0]}`,
+							msg: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+						});
 					});
 			} else {
 				axios
@@ -98,14 +96,10 @@ export default function RegisterPage() {
 						password: values.password
 					})
 					.then((res) => {
-						console.log('Teacher:');
-						console.log(res);
 						history.push('/login');
 					})
 					.catch((e) => {
 						setFormErrors({ title: `Error`, msg: e.response.data.title });
-						console.log('ERROR');
-						console.log(e);
 					});
 			}
 
@@ -127,7 +121,7 @@ export default function RegisterPage() {
 	};
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		console.log(name + '  ' + value);
+
 		setValues({ ...values, [name]: value });
 	};
 
