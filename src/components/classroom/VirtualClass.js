@@ -18,7 +18,7 @@ function VirtualClassRoom(props){
     const token = localStorage.getItem("REACT_TOKEN_AUTH") || '';
     let role = localStorage.getItem("userType");
     role = role.charAt(0).toUpperCase() + role.slice(1);
-
+    const host = process.env.BASE_URL_HOST || "http://127.0.0.1:3";
     function init_video(role){
         console.log(`Initing for ${role}`);
         let myPeer;
@@ -120,7 +120,7 @@ function VirtualClassRoom(props){
         }
 
 
-        connection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
+        connection = new signalR.HubConnectionBuilder().withUrl(`${host}/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
         setConnection(connection);
         navigator.mediaDevices.getUserMedia(
             role === 'Instructor' ? { video: true, audio: true } : {audio: true}
@@ -135,7 +135,7 @@ function VirtualClassRoom(props){
                   })})
 
                 // TODO: Improve this implementation
-                myPeer = new Peer(undefined, {host: '/', port: 3001});
+                myPeer = new Peer(undefined);
 
                 myPeer.on('open', id => {
                     console.log("Peer is open");
@@ -228,7 +228,7 @@ function VirtualClassRoom(props){
                     }
                 })
                 
-                screenPeer = new Peer(undefined, {host: '/', port: 3001});
+                screenPeer = new Peer(undefined);
 
                 screenPeer.on('open', id => {
                     console.log("Peer is open");

@@ -22,6 +22,7 @@ import CourseDetailStudent from './components/student/courseDetail';
 import CourseDetail from './components/courseDetail';
 import VirtualClassroom from './components/classroom/VirtualClass'
 
+require('dotenv').config()
 ReactDOM.render(
 	<BrowserRouter>
 		<NavBar />
