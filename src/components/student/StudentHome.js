@@ -9,7 +9,14 @@ function StudentHome() {
 
 	useEffect(() => {
 		async function fetchData() {
-			const request = await axios.get('Course/studentCourses');
+			const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
+
+			const request = await axios.get('Course/studentCourses', {
+				headers: {
+					Accept: 'application/json',
+					Authorization: `Bearer ${token}`
+				}
+			});
 
 			console.log('REQuest');
 			console.log(request);

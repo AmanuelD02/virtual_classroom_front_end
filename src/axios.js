@@ -1,8 +1,8 @@
 import axios from 'axios';
 const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
-
+const baseUrl = process.env.BaseUrl || 'http://localhost:51044/api';
 const instance = axios.create({
-	baseURL: 'http://localhost:51044/api',
+	baseURL: baseUrl,
 	headers: {
 		Accept: 'application/json',
 		Authorization: `Bearer ${token}`
