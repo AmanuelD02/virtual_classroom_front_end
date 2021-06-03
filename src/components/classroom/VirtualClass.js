@@ -17,7 +17,7 @@ function VirtualClassRoom(props) {
 	const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
 	let role = localStorage.getItem('userType');
 	role = role.charAt(0).toUpperCase() + role.slice(1);
-	const host = process.env.BASE_URL_HOST || 'http://127.0.0.1:51044';
+	const host = process.env.REACT_APP_BASE_URL_HOST || 'http://127.0.0.1:51044';
 	function init_video(role) {
 		console.log(`Initing for ${role}`);
 		let myPeer;
