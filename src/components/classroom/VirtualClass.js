@@ -285,7 +285,7 @@ function VirtualClassRoom(props){
     let [mutelist, setMuteList] = useState({})
 
     // Adding the socket object as a state
-    let [socket, setSocket] = useState({});\
+    let [socket, setSocket] = useState({});
 
     // Adding the main Id from call as state
     let [mainId, setMainId] = useState("");
