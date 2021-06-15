@@ -3,7 +3,7 @@ import {useHistory} from 'react-router-dom';
 import {Row, Col, ListGroup, ListGroupItem, ListGroupItemText} from 'reactstrap';
 import * as signalR from '@microsoft/signalr'
 import Peer from 'peerjs';
-import {useParams} from 'react-router';
+import { useParams } from 'react-router';
 import ImageGallery from 'react-image-gallery';
 // import { FloatingButton, Item } from "react-floating-button";
 import FloatingButtons from 'react-floating-buttons'
@@ -20,7 +20,7 @@ function VirtualClassRoom(props){
     // let role = localStorage.getItem("userType");
     // role = role.charAt(0).toUpperCase() + role.slice(1);
     let role = "Instructor";
-    const host = process.env.BASE_URL_HOST || "http://127.0.0.1:5000";
+    const host = process.env.REACT_APP_BASE_URL_HOST || "http://127.0.0.1:5000";
     function init_video(role){
         console.log(`Initing for ${role}`);
         let myPeer;

@@ -24,6 +24,7 @@ import {
 
 import '../../assets/css/courseDetail.css';
 import { useParams } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 // core components
 
@@ -31,6 +32,7 @@ let ps = null;
 
 export default function CourseDetailStudent(props) {
 	let { id } = useParams();
+	const history = useHistory();
 	const [ courseInfo, setCourseInfo ] = useState({});
 	const [ classRoomList, setClassRoomList ] = useState([]);
 	const [ tabs, setTabs ] = React.useState(1);
@@ -174,6 +176,11 @@ export default function CourseDetailStudent(props) {
 																				className=" btn-simple btn-round"
 																				width="20px"
 																				color="success"
+																				onClick={(e) => {
+																					history.push(
+																						`/join_classroom/${clas.classRoomId}`
+																					);
+																				}}
 																				type="button"
 																			>
 																				Join
