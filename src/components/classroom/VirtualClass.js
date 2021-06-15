@@ -1,24 +1,26 @@
 import React, {useState, useEffect} from 'react';
 import {useHistory} from 'react-router-dom';
-import {Row, Col, ListGroup, ListGroupItem, Button, ListGroupItemText} from 'reactstrap';
+import {Row, Col, ListGroup, ListGroupItem, ListGroupItemText} from 'reactstrap';
 import * as signalR from '@microsoft/signalr'
 import Peer from 'peerjs';
 import {useParams} from 'react-router';
 import ImageGallery from 'react-image-gallery';
 // import { FloatingButton, Item } from "react-floating-button";
 import FloatingButtons from 'react-floating-buttons'
-import { FaMicrophoneAltSlash, FaMicrophoneAlt, FaAdversal } from "react-icons/fa"
+import { FaMicrophoneAltSlash, FaMicrophoneAlt } from "react-icons/fa"
 import endCall from './../../assets/img/endCall.svg';
 import shareScreen from './../../assets/img/shareScreen.svg';
+import { io } from "socket.io-client";
 
 
 function VirtualClassRoom(props){
     let {id} = useParams();
     const classID = id;
     const token = localStorage.getItem("REACT_TOKEN_AUTH") || '';
-    let role = localStorage.getItem("userType");
-    role = role.charAt(0).toUpperCase() + role.slice(1);
-    const host = process.env.BASE_URL_HOST || "http://127.0.0.1:3";
+    // let role = localStorage.getItem("userType");
+    // role = role.charAt(0).toUpperCase() + role.slice(1);
+    let role = "Instructor";
+    const host = process.env.BASE_URL_HOST || "http://127.0.0.1:5000";
     function init_video(role){
         console.log(`Initing for ${role}`);
         let myPeer;
@@ -28,7 +30,7 @@ function VirtualClassRoom(props){
             connection.on('UserConnected', user => {
                 user = JSON.parse(user);
                 let userID = user.CallId;
-                console.log("Server Reports success")
+                console.log("Server Reports new user")
                 console.log(user);
                 addNewUser([userID, user]);
                 connectToNewUser(userID, myStream);
@@ -103,7 +105,7 @@ function VirtualClassRoom(props){
 
             myPeer.on('call', call => {
                 
-                console.log("Found Call!!");
+                console.log("Found Call from " + call.peer);
                 
                 call.answer(myStream);
         
@@ -119,34 +121,31 @@ function VirtualClassRoom(props){
             
         }
 
-
-        connection = new signalR.HubConnectionBuilder().withUrl(`${host}/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
-        setConnection(connection);
+        let socket;
         navigator.mediaDevices.getUserMedia(
             role === 'Instructor' ? { video: true, audio: true } : {audio: true}
         ).then(stream => {
             myStream = stream;
             console.log("Current user video stream added!");
-
-            connection.start().then(function () {
-                configure_connection(connection);
-                connection.onclose(()=> {stream.getTracks().forEach(function(track) {
+            socket = io("http://127.0.0.1:5000");
+            setSocket(socket);
+            socket.on('connect', function() {
+                configure_connection(socket);
+                socket.on("disconnect", ()=> {stream.getTracks().forEach(function(track) {
                     track.stop();
                   })})
 
                 // TODO: Improve this implementation
-                myPeer = new Peer(undefined);
+                myPeer = new Peer(undefined, {host: "/", port:3001});
 
                 myPeer.on('open', id => {
                     console.log("Peer is open");
                     setMainId(id);
-                    connection.invoke("JoinRoom", id, classID, token);
+                    socket.emit("JoinRoom", id, classID, token);
                     addStream(myStream, id);
                     console.log(`Muting ${id}`);
                     mute(id);
                 });
-            }).catch(function (err) {
-                return console.error(err.toString());
             });
         });
         
@@ -166,15 +165,15 @@ function VirtualClassRoom(props){
             })
         }
 
-        return async () => {await connection.stop()}
+        return async () => {await socket.disconnect()}
     }
 
     function sendMute(id){
-        connection.invoke("SendMute", id, classID);
+        socket.emit("SendMute", id, classID);
     }
 
     function sendUnmute(id){
-        connection.invoke("SendUnMute", id, classID);
+        socket.emit("SendUnMute", id, classID);
     }
 
     function addNewUser([id, info]){
@@ -210,17 +209,19 @@ function VirtualClassRoom(props){
 
     function createScreen(){
         navigator.mediaDevices.getDisplayMedia().then((screenStream)=>{
-            let screenConnection = new signalR.HubConnectionBuilder().withUrl(`http://127.0.0.1:51044/p/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6/Classrooms/${classID}/join`).build();
+            
             let stillAlive = true;
             screenStream.getVideoTracks()[0].onended = async function () {
                 stillAlive = false;
-                await screenConnection.stop();
+                screenSocket.disconnect();
             };
             let screenPeer;
-            screenConnection.start().then(() => {
+            let screenSocket = io("http://127.0.0.1:5000");
+            screenSocket.on('connect', function() {
+                console.log("Ohhhhh myyyy goddd we connected");
                 // TODO: find a way to close sharing;
-                connection.onclose(async () => {
-                    await screenConnection.stop()
+                socket.on("disconnect", async () => {
+                    await screenSocket.disconnect()
                     if(stillAlive){
                         screenStream.getTracks().forEach(function(track) {
                             track.stop();
@@ -228,12 +229,12 @@ function VirtualClassRoom(props){
                     }
                 })
                 
-                screenPeer = new Peer(undefined);
+                screenPeer = new Peer(undefined, {host: "/", port: 3001});
 
                 screenPeer.on('open', id => {
                     console.log("Peer is open");
                     addNewUser([id, {Role: "Instructor", HasAudio: false, HasVideo: false, UserName: "My Screen Share" }]);
-                    screenConnection.invoke("ScreenShare", id, classID);
+                    screenSocket.emit("ScreenShare", id, classID);
                     addStream(screenStream, id);
                 });
                 screenPeer.on('call', call => {
@@ -247,8 +248,7 @@ function VirtualClassRoom(props){
                     })
                 })
             });
-
-            screenConnection.on('UserConnected', user => {
+            screenSocket.on('UserConnected', user => {
                 user = JSON.parse(user);
                 let userID = user.CallId;
                 console.log("Server Reports success")
@@ -284,8 +284,8 @@ function VirtualClassRoom(props){
     // state mutelist: call_id: true
     let [mutelist, setMuteList] = useState({})
 
-    // Adding the connection object as a state
-    let [connection, setConnection] = useState({});
+    // Adding the socket object as a state
+    let [socket, setSocket] = useState({});\
 
     // Adding the main Id from call as state
     let [mainId, setMainId] = useState("");
@@ -377,7 +377,7 @@ function VirtualClassRoom(props){
                                 <ListGroupItem key={id} style={{backgroundColor: '#110033'}}>
                                     <ListGroupItemText>
                                         {user.username}
-                                        {((role === "Instructor" && mutelist[id] === undefined) && 
+                                        {((role === "Instructor" && (mutelist[id] === undefined || id === mainId)) && 
                                             <FaMicrophoneAlt onClick={()=>sendMute(id)} style={{float: 'right', size: '3em'}}/>)
                                         }
                                         {((role === "Instructor" && mutelist[id] !== undefined) && 
