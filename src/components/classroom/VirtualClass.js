@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useHistory} from 'react-router-dom';
 import {Row, Col, ListGroup, ListGroupItem, ListGroupItemText} from 'reactstrap';
-import * as signalR from '@microsoft/signalr'
 import Peer from 'peerjs';
 import { useParams } from 'react-router';
 import ImageGallery from 'react-image-gallery';
@@ -16,10 +15,10 @@ import { io } from "socket.io-client";
 function VirtualClassRoom(props){
     let {id} = useParams();
     const classID = id;
+    let role;
     const token = localStorage.getItem("REACT_TOKEN_AUTH") || '';
-    // let role = localStorage.getItem("userType");
-    // role = role.charAt(0).toUpperCase() + role.slice(1);
-    let role = "Instructor";
+    role = localStorage.getItem("userType");
+    role = role.charAt(0).toUpperCase() + role.slice(1);
     const host = process.env.REACT_APP_BASE_URL_HOST || "http://127.0.0.1:5000";
     function init_video(role){
         console.log(`Initing for ${role}`);
@@ -127,7 +126,7 @@ function VirtualClassRoom(props){
         ).then(stream => {
             myStream = stream;
             console.log("Current user video stream added!");
-            socket = io("http://127.0.0.1:5000");
+            socket = io(host);
             setSocket(socket);
             socket.on('connect', function() {
                 configure_connection(socket);
@@ -136,7 +135,7 @@ function VirtualClassRoom(props){
                   })})
 
                 // TODO: Improve this implementation
-                myPeer = new Peer(undefined, {host: "/", port:3001});
+                myPeer = new Peer(undefined);
 
                 myPeer.on('open', id => {
                     console.log("Peer is open");
@@ -216,9 +215,8 @@ function VirtualClassRoom(props){
                 screenSocket.disconnect();
             };
             let screenPeer;
-            let screenSocket = io("http://127.0.0.1:5000");
+            let screenSocket = io(host);
             screenSocket.on('connect', function() {
-                console.log("Ohhhhh myyyy goddd we connected");
                 // TODO: find a way to close sharing;
                 socket.on("disconnect", async () => {
                     await screenSocket.disconnect()
@@ -229,7 +227,7 @@ function VirtualClassRoom(props){
                     }
                 })
                 
-                screenPeer = new Peer(undefined, {host: "/", port: 3001});
+                screenPeer = new Peer(undefined);
 
                 screenPeer.on('open', id => {
                     console.log("Peer is open");
