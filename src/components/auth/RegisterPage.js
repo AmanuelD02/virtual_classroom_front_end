@@ -65,35 +65,38 @@ export default function RegisterPage() {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
+		console.log('SIGN -0');
 		if (values.password.length <= 8) {
 			setFormErrors({ title: `Password`, msg: `Weak Password` });
 		} else if (values.confirmPassword === values.password) {
 			setFormErrors({ title: '', msg: '' });
+			console.log('Register 1');
 
 			if (values.userType === 'student') {
 				axios
-					.post('authenticate/Students/CreateStudent', {
-						firstName: values.fname,
-						lastName: values.lname,
-						email: values.email,
-						password: values.password
+					.post('authenticate/students/createstudent', {
+						FirstName: values.fname,
+						LastName: values.lname,
+						Email: values.email,
+						Password: values.password
 					})
 					.then((res) => {
 						history.push('/login');
 					})
 					.catch((e) => {
+						console.log(e.response);
 						setFormErrors({
-							title: `${Object.keys(e.response.data.errors)[0]}`,
-							msg: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+							title: `${Object.keys(e.response.data)[0]}`,
+							msg: e.response.data[Object.keys(e.response.data)[0]][0]
 						});
 					});
 			} else {
 				axios
-					.post('authenticate/Instructor/CreateInstructor', {
-						firstName: values.fname,
-						lastName: values.lname,
-						email: values.email,
-						password: values.password
+					.post('authenticate/instructors/createinstructor', {
+						FirstName: values.fname,
+						LastName: values.lname,
+						Email: values.email,
+						Password: values.password
 					})
 					.then((res) => {
 						history.push('/login');

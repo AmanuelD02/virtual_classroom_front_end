@@ -57,8 +57,9 @@ export default function CourseDetailInstructor() {
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Course/${id}`);
-
+				const request = await axios.get(`courses/${id}`);
+				console.log('REQ');
+				console.log(request.data);
 				setCourseInfo(request.data);
 
 				return request;
@@ -72,7 +73,7 @@ export default function CourseDetailInstructor() {
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Course/${id}/Students`);
+				const request = await axios.get(`courses/${id}/students`);
 				setStudentList(request.data);
 				return request;
 			}
@@ -87,13 +88,15 @@ export default function CourseDetailInstructor() {
 		async function fetchStudentId() {
 			console.log('Student Email is ' + studentEmail);
 			try {
-				const request = await axios.get(`authenticate/Students/StudentEmail/${studentEmail}`);
+				const request = await axios.get(`authenticate/students/studentByEmail/${studentEmail}`);
 				const res = await request.data;
+				console.log(" STUDNET")
+				console.log(res.userid)
 
 				const req = await axios
-					.post(`Course/student/${id}`, {
-						studentId: res.id,
-						courseId: id
+					.post(`courses/${id}`, {
+						StudentID: res.userid,
+						CourseID: id
 					})
 					.then((res) => {
 						setStudentEmail('');
@@ -119,7 +122,8 @@ export default function CourseDetailInstructor() {
 	}
 
 	function DeleteStudentFunc() {
-		axios.delete(`Course/${id}/Student/${DeleteStudent}`).then((res) => {
+
+		axios.delete(`courses/${id}/student/${DeleteStudent}`).then((res) => {
 			console.log('DELETED');
 			console.group(res);
 			setForceRender(ForceRender + 1);
@@ -158,9 +162,9 @@ export default function CourseDetailInstructor() {
 					<Container className="align-items-center">
 						<Row>
 							<Col lg="6" md="6">
-								<h1 className="profile-title text-left">{courseInfo.title}</h1>
+								<h1 className="profile-title text-left">{courseInfo.CourseTitle}</h1>
 
-								<p className="profile-description">{courseInfo.description}</p>
+								<p className="profile-description">{courseInfo.CourseDescription}</p>
 							</Col>
 							<Col className="ml-auto mr-auto" lg="4" md="6">
 								<Card className="card-coin card-plain" style={{ width: '38rem' }}>
@@ -266,16 +270,18 @@ export default function CourseDetailInstructor() {
 															</tr>
 														</thead>
 														<tbody>
+															{console.log("STUDENT")}
+															{console.log(studentList)}
 															{studentList.map((st) => {
 																return (
-																	<tr key={st.id}>
+																	<tr key={st.userid}>
 																		<td>{st.name} </td>
 																		<td>
 																			<ImCross
 																				color="red"
 																				onClick={(e) => {
 																					setDeleteStudentModal(true);
-																					setDeleteStudent(st.id);
+																					setDeleteStudent(st.userid);
 																				}}
 																			/>
 																		</td>

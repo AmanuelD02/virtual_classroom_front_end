@@ -19,10 +19,10 @@ function CreateClass() {
 		setFormValues({});
 		let instructorId = localStorage.getItem('user');
 		axios
-			.post('Course', {
-				title: formValues.title,
-				description: formValues.description,
-				instructorId: instructorId
+			.post('courses', {
+				CourseTitle: formValues.title,
+				CourseDescription: formValues.description,
+				InstructorID: instructorId
 			})
 			.then((res) => {
 				history.push('/instructorhome');

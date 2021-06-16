@@ -62,8 +62,8 @@ export default function CourseDetailStudent(props) {
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Course/studentCourses/${id}`);
-				console.log('REQUESt');
+				const request = await axios.get(`courses/student/${id}`);
+				console.log('detail');
 				console.log(request.data);
 				setCourseInfo(request.data);
 
@@ -78,7 +78,7 @@ export default function CourseDetailStudent(props) {
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Course/${id}/Classrooms`);
+				const request = await axios.get(`courses/${id}/classrooms`);
 
 				setClassRoomList(request.data);
 				return request;
@@ -91,7 +91,7 @@ export default function CourseDetailStudent(props) {
 	// FEtch Resources
 	useEffect(
 		() => {
-			axios.get(`Courses/${id}/Resources`).then((res) => {
+			axios.get(`course/${id}/resources`).then((res) => {
 				console.log('REsource');
 				console.log(res);
 				setResourceList(res.data);
@@ -110,9 +110,12 @@ export default function CourseDetailStudent(props) {
 						<Row>
 							<Col lg="6" md="6">
 								{console.log(courseInfo)}
-								<h1 className="profile-title text-left">{courseInfo.title}</h1>
+								{console.log("DESCRIPTION")}
+								
+								{console.log(courseInfo.CourseDescription)}
+								<h1 className="profile-title text-left">{courseInfo.CourseTitle}</h1>
 
-								<p className="profile-description">{courseInfo.description}</p>
+								<p className="profile-description">{courseInfo.CourseDescription}</p>
 							</Col>
 							<Col className="ml-auto mr-auto" lg="4" md="6">
 								<Card className="card-coin card-plain" style={{ width: '38rem' }}>
@@ -159,15 +162,15 @@ export default function CourseDetailStudent(props) {
 														<tbody>
 															{classRoomList.map((clas) => {
 																return (
-																	<tr key={clas.classRoomId}>
+																	<tr key={clas.ClassroomID}>
 																		<td>
 																			<p>{clas.classRoomName}</p>
 																		</td>
-																		<td> {new Date(clas.date).toDateString()}</td>
+																		<td> {new Date(clas.Date).toDateString()}</td>
 																		<td>
 																			<p>
-																				{clas.startTime.substr(0, 5)} -{' '}
-																				{clas.endTime.substr(0, 5)}{' '}
+																				{clas.StartTime.substr(0, 5)} -{' '}
+																				{clas.EndTime.substr(0, 5)}{' '}
 																			</p>
 																		</td>
 
@@ -178,7 +181,7 @@ export default function CourseDetailStudent(props) {
 																				color="success"
 																				onClick={(e) => {
 																					history.push(
-																						`/join_classroom/${clas.classRoomId}`
+																						`/join_classroom/${clas.ClassroomID}`
 																					);
 																				}}
 																				type="button"
@@ -199,11 +202,11 @@ export default function CourseDetailStudent(props) {
 														<tbody>
 															{resourceList.map((rs) => {
 																return (
-																	<tr key={rs.resourceId}>
+																	<tr key={rs.ResourceID}>
 																		<td
 																			color="info"
 																			width="100%"
-																			key={rs.id}
+																			key={rs.ResourceID}
 																			className="justify-content-between p-3 border-bottom border-warning mw-100"
 																		>
 																			{rs.fileName}
@@ -211,7 +214,7 @@ export default function CourseDetailStudent(props) {
 																		<td>
 																			<span className="text-muted">
 																				Created at{' '}
-																				{new Date(rs.creationDate).toDateString()}
+																				{new Date(rs.CreationDate).toDateString()}
 																			</span>
 																		</td>
 																		<td
@@ -225,7 +228,7 @@ export default function CourseDetailStudent(props) {
 																					onClick={(e) => {
 																						axios
 																							.get(
-																								`Courses/${id}/Resources/${rs.resourceId}/Download`,
+																								`course/${id}/resources/${rs.ResourceID}/download`,
 																								{
 																									responseType: 'blob'
 																								}
@@ -242,7 +245,7 @@ export default function CourseDetailStudent(props) {
 																								link.href = url;
 																								link.setAttribute(
 																									'download',
-																									rs.fileName
+																									rs.FileName
 																								);
 																								document.body.appendChild(
 																									link

@@ -6,6 +6,8 @@ import { FaPlus } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import TimeKeeper from 'react-timekeeper';
 
+import moment from 'moment';
+
 import { useHistory } from 'react-router-dom';
 
 // reactstrap components
@@ -23,7 +25,7 @@ function VirtualClassroom(props) {
 	const [ attendanceList, setAttendanceList ] = useState([]);
 	const [ attendanceModal, setAttendanceModal ] = useState(false);
 
-	const [ startDate, setStartDate ] = useState(new Date());
+	const [ StartDate, setStartDate ] = useState(new Date());
 	const [ StartTime, setStartTime ] = useState('12:00');
 	const [ showStartTime, setShowStartTime ] = useState(false);
 
@@ -36,14 +38,17 @@ function VirtualClassroom(props) {
 	useEffect(
 		() => {
 			async function fetchData() {
-				const request = await axios.get(`Course/${courseId}/Classrooms`);
+				const request = await axios.get(`courses/${courseId}/classrooms`);
+				
 
+				console.log("CLASSROOM:")
+				console.log(request.data)
 				setClassRoomList(request.data);
 				return request;
 			}
 			fetchData();
 		},
-		[ courseId, ForceRender ]
+		[ courseId,ForceRender ]
 	);
 
 	function submitVirtualClassRoom() {
@@ -60,14 +65,20 @@ function VirtualClassroom(props) {
 			console.log(StartTime + '  ' + EndTime);
 		} else {
 			console.log('SENDING..');
+			console.log(StartDate.toJSON())
+			var datee = `${StartDate.getDay()}/${StartDate.getMonth()}/${StartDate.getFullYear().toString().substring(2,4)}`
+			var s = moment(StartDate.toJSON())
+			console.log(moment(StartDate).format('d/M/YY'))
+			console.log("startDAte")
+			console.log(StartDate.getDay())
 
 			axios
-				.post(`Course/${courseId}/Classrooms`, {
-					classRoomName: classRoomTitle,
-					date: startDate.toJSON(),
-					startTime: StartTime,
-					endTime: EndTime,
-					courseId: courseId
+				.post(`courses/${courseId}/classrooms`, {
+					ClassroomName: classRoomTitle,
+					// Date: `${StartDate.getDay()}/${StartDate.getMonth()}/${StartDate.getFullYear().toString().substring(2,4)}`,
+					Date: StartDate.toJSON(),
+					StartTime: StartTime,
+					EndTime: EndTime
 				})
 				.then((res) => {
 					setClassRoomTitle('');
@@ -81,6 +92,7 @@ function VirtualClassroom(props) {
 					console.log(res.data);
 				})
 				.catch((e) => {
+					console.log(e.response)
 					swal({
 						title: 'Error',
 						text: e.response.data.title,
@@ -91,7 +103,7 @@ function VirtualClassroom(props) {
 		}
 	}
 
-	function deleteClassRoom(classRoomId) {
+	function deleteClassRoom(ClassroomID) {
 		swal({
 			title: 'Are you sure You want to Delete?',
 			text: ' ',
@@ -100,7 +112,7 @@ function VirtualClassroom(props) {
 			dangerMode: true
 		}).then((willDelete) => {
 			if (willDelete) {
-				axios.delete(`Course/${courseId}/Classrooms/${classRoomId}`).then((res) => {
+				axios.delete(`courses/${courseId}/classrooms/${ClassroomID}`).then((res) => {
 					setForceRender(ForceRender + 1);
 
 					console.log(res);
@@ -109,12 +121,13 @@ function VirtualClassroom(props) {
 		});
 	}
 
-	function fetchAttendance(classRoomId) {
-		axios.get(`Course/${courseId}/Classrooms/${classRoomId}/attendance`).then((res) => {
-			setAttendanceList(res.data);
-			setAttendanceModal(true);
-		});
-	}
+	// function fetchAttendance(ClassroomID) {
+	// 	e.preventDefault();
+	// 	axios.get(`courses/${courseId}/classrooms/${ClassroomID}/attendance`).then((res) => {
+	// 		setAttendanceList(res.data);
+	// 		setAttendanceModal(true);
+	// 	});
+	// }
 
 	return (
 		<React.Fragment>
@@ -143,38 +156,45 @@ function VirtualClassroom(props) {
 					</tr>
 				</thead>
 				<tbody>
+					{console.log(classRoomList	)}
 					{classRoomList.map((clas) => {
 						return (
-							<tr key={clas.classRoomId}>
+							<tr key={clas.ClassroomID}>
 								<td>
-									<p>{clas.classRoomName}</p>
+									<p>{clas.ClassroomName}</p>
 								</td>
-								<td> {clas.date && new Date(clas.date).toDateString()}</td>
+								<td> {clas.Date && new Date(clas.Date).toDateString()}</td>
 								<td>
 									<p>
-										{clas.startTime.substr(0, 5)} - {clas.endTime.substr(0, 5)}{' '}
+										{clas.StartTime.substr(0, 5)} - {clas.EndTime.substr(0, 5)}{' '}
 									</p>
 								</td>
 
 								<td>
-									{new Date() >= new Date(clas.date).setHours(clas.endTime.substr(0, 2)) && (
+									{new Date() > new Date(clas.Date).setHours(clas.EndTime.substr(0, 2)) && (
 										<Button
 											className=" btn-simple btn-round"
 											width="20px"
 											color="success"
-											onClick={fetchAttendance(clas.classRoomId)}
+											// onClick={fetchAttendance(clas.ClassroomID)}
+											onClick={(e)=>{
+												axios.get(`courses/${courseId}/classrooms/${clas.ClassroomID}/attendance`).then((res) => {
+													setAttendanceList(res.data);
+														setAttendanceModal(true);
+																		});
+											}}
 											type="button"
 										>
 											Attendace
 										</Button>
 									)}
 
-									{new Date() <= new Date(clas.date).setHours(clas.endTime.substr(0, 2)) && (
+									{new Date() <= new Date(clas.Date).setHours(clas.EndTime.substr(0, 2)) && (
 										<Button
 											className=" btn-simple btn-round"
 											width="20px"
 											onClick={(e) => {
-												history.push(`/join_classroom/${clas.classRoomId}`);
+												history.push(`/join_classroom/${clas.ClassroomID}`);
 											}}
 											color="success"
 											type="button"
@@ -189,7 +209,7 @@ function VirtualClassroom(props) {
 										width="20px"
 										color="danger"
 										onClick={(e) => {
-											deleteClassRoom(clas.classRoomId);
+											deleteClassRoom(clas.ClassroomID);
 										}}
 										type="button"
 									>
@@ -237,8 +257,13 @@ function VirtualClassroom(props) {
 							</Col>
 							<Col>
 								<DatePicker
-									selected={startDate}
-									onChange={(date) => setStartDate(date)}
+									selected={StartDate}
+									onChange={(date) => {
+										setStartDate(date)
+										console.log("SET")
+										console.log(date)
+										console.log(moment(StartDate).format('d/M/YY'))}}
+									
 									minDate={new Date()}
 									className="bg-secondary text-black"
 									placeholderText="Date"
@@ -316,7 +341,7 @@ function VirtualClassroom(props) {
 					<button className="close" onClick={() => setAttendanceModal(false)}>
 						<i className="tim-icons icon-simple-remove" />
 					</button>
-					<h4 className="title title-up">Add Virtual ClassRoom</h4>
+					<h4 className="title title-up">Virtual ClassRoom</h4>
 				</div>
 				<div className="modal-body">
 					<Container>

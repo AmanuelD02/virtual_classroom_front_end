@@ -61,34 +61,44 @@ export default function RegisterPage() {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		axios
-			.post('authenticate', {
-				userName: values.email,
-				password: values.password
-			})
-			.then((res) => res.data)
-			.then((res) => {
-				localStorage.setItem('REACT_TOKEN_AUTH', res.token);
-				if (res.role === 'Student') {
-					localStorage.setItem('user', res.id);
-					localStorage.setItem('userType', 'student');
+		try {
+			axios
+				.post('authenticate', {
+					UserName: values.email,
+					Password: values.password
+				})
+				.then((res) => res.data)
+				.then((res) => {
+					console.log(res);
+					localStorage.setItem('REACT_TOKEN_AUTH', res.token);
+					if (res.role === 'Student') {
+						localStorage.setItem('user', res.id);
+						localStorage.setItem('userType', 'student');
 
-					history.push('/studenthome');
-				} else {
-					localStorage.setItem('user', res.id);
+						history.push('/studenthome');
+					} else {
+						localStorage.setItem('user', res.id);
 
-					localStorage.setItem('userType', 'instructor');
+						localStorage.setItem('userType', 'instructor');
 
-					history.push('/instructorhome');
-				}
-			})
-			.catch((e) => {
-				console.log(e.response.data);
-				setFormErrors({
-					title: `${Object.keys(e.response.data.errors)[0]}`,
-					msg: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+						history.push('/instructorhome');
+					}
+				})
+				.catch((e) => {
+					console.log(e);
+					setFormErrors({
+						title: 'Error',
+						msg: e.response.data.message
+						// msg: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+					});
 				});
+		} catch (e) {
+			setFormErrors({
+				// message: e.response.data.errors[Object.keys(e.response.data.errors)][0]
+				title: 'Error',
+				msg: e.message.message
 			});
+		}
 	};
 	if (localStorage.getItem('user') && localStorage.getItem('userType') === 'instructor') {
 		return <Redirect to="/instructorhome" />;

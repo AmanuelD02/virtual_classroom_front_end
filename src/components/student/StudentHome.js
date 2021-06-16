@@ -11,7 +11,7 @@ function StudentHome() {
 		async function fetchData() {
 			const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
 
-			const request = await axios.get('Course/studentCourses', {
+			const request = await axios.get('courses/studentcourses', {
 				headers: {
 					Accept: 'application/json',
 					Authorization: `Bearer ${token}`
@@ -38,14 +38,15 @@ function StudentHome() {
 						</div>
 						<Container>
 							<Row>
-								{courses.map((card) => {
+								{console.log(courses)}
+							{courses.map((card) => {
 									return (
-										<Col md="4" key={card.courseId}>
+										<Col md="4" key={card.userid} className="mx-auto">
 											<ClassCard
-												id={card.courseId}
-												title={card.title}
-												instructor={card.instructor}
-												description={card.description}
+												id={card.userid}
+												title={card.CourseTitle}
+												instructor={card.InstructorID}
+												description={card.CourseDescription}
 											/>
 										</Col>
 									);

@@ -9,6 +9,7 @@ import 'assets/demo/demo.css';
 import ProtectedStudentRoute from './ProtectedStudentRoute';
 import ProtectedInstructorRoute from './ProtectedInstructorRoute';
 
+
 import NavBar from './components/NavBar.js';
 import App from './App';
 
@@ -20,9 +21,9 @@ import CourseDetailInstructor from './components/instructor/courseDetail';
 import CreateClass from './components/instructor/CreateClass';
 import CourseDetailStudent from './components/student/courseDetail';
 import CourseDetail from './components/courseDetail';
-import VirtualClassroom from './components/classroom/VirtualClass'
+import VirtualClassroom from './components/classroom/VirtualClass';
 
-require('dotenv').config()
+require('dotenv').config();
 ReactDOM.render(
 	<BrowserRouter>
 		<NavBar />
@@ -44,3 +45,4 @@ ReactDOM.render(
 	</BrowserRouter>,
 	document.getElementById('root')
 );
+

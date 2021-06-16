@@ -18,8 +18,9 @@ function Resources(props) {
 	// FEtch Resources
 	useEffect(
 		() => {
-			axios.get(`Courses/${courseId}/Resources`).then((res) => {
-				console.log('REsource');
+			axios.get(`course/${courseId}/resources`).then((res) => {
+
+				console.log('Resource');
 				console.log(res);
 				setResourceList(res.data);
 			});
@@ -29,15 +30,19 @@ function Resources(props) {
 
 	// Resource Upload
 	function uploadResource() {
+		console.log("RES UP")
 		const data = new FormData();
 		data.append('file', resourceToUpload);
+		console.log("RSU")
 		axios
-			.post(`/Courses/${courseId}/Resources`, data, {
+			.post(`/course/${courseId}/resources`, data, {
 				headers: {
-					'Content-Type': 'multipart/form-data'
+					'Content-Type': 'multipart/form-data',
+					
 				}
 			})
 			.then((res) => {
+				console.log("RSU")
 				setResourceUploadModal(false);
 				setForceRender(ForceRender + 1);
 
@@ -67,13 +72,13 @@ function Resources(props) {
 				<ListGroup>
 					{resourceList.map((rs) => {
 						return (
-							<ListGroupItem color="white" key={rs.resourceId} className="justify-content-between mt-2">
+							<ListGroupItem color="white" key={rs.ResourceID} className="justify-content-between mt-2">
 								<Row>
 									<Col>
 										<span
 											onClick={(e) => {
 												axios
-													.get(`Courses/${courseId}/Resources/${rs.resourceId}/Download`, {
+													.get(`course/${courseId}/resources/${rs.ResourceID}/download`, {
 														responseType: 'blob'
 													})
 													.then((response) => {
@@ -82,18 +87,18 @@ function Resources(props) {
 														);
 														const link = document.createElement('a');
 														link.href = url;
-														link.setAttribute('download', rs.fileName); //or any other extension
+														link.setAttribute('download', rs.FileName); //or any other extension
 														document.body.appendChild(link);
 														link.click();
 													});
 											}}
 										>
-											{rs.fileName}
+											{rs.FileName}
 										</span>
 									</Col>
 									<Col>
 										<span className="text-muted">
-											Created at {new Date(rs.creationDate).toDateString()}
+											Created at {new Date(rs.CreationDate).toDateString()}
 										</span>
 									</Col>
 									<Col sm="1">
@@ -112,7 +117,7 @@ function Resources(props) {
 															console.log('WILL DELETE');
 															axios
 																.delete(
-																	`Courses/${courseId}/Resources/${rs.resourceId}`
+																	`course/${courseId}/resources/${rs.ResourceID}`
 																)
 																.then((res) => {
 																	setForceRender(ForceRender + 1);
