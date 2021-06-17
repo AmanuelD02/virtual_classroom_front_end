@@ -50,7 +50,7 @@ function VirtualClassRoom(props){
 
             connection.on('MakeMute', mute);
 
-            connection.on('MakeUnmute', unmute);
+            connection.on('MakeUnMute', unmute);
             
             connection.on('UserDisconnected', userId => {
                 console.log("Servers reports disconnect");
@@ -157,9 +157,11 @@ function VirtualClassRoom(props){
             setMuteList(oldMuteList => ({...oldMuteList, [id]: true}))
         }
         function unmute(id){
+            console.log("Unmute called")
             setMuteList(oldMuteList => {
                 const newMuteList = {...oldMuteList};
                 delete newMuteList[id];
+                console.log(newMuteList);
                 return newMuteList;
             })
         }
@@ -390,6 +392,7 @@ function VirtualClassRoom(props){
                                             }
                                             if (mutelist[id] || id === mainId){
                                                 console.log("muting audio for student");
+                                                console.log(mutelist[id])
                                                 audio.muted = true;
                                             } else {
                                                 audio.muted = false;

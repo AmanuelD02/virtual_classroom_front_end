@@ -1,6 +1,7 @@
 import axios from 'axios';
 const token = localStorage.getItem('REACT_TOKEN_AUTH') || '';
-const baseUrl = 'http://localhost:51043/api';
+const baseUrl = process.env.REACT_APP_BASE_URL;
+console.log(baseUrl);
 const instance = axios.create({
 	baseURL: baseUrl,
 	headers: {
