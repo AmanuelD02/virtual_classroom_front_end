@@ -164,7 +164,7 @@ export default function CourseDetailStudent(props) {
 																return (
 																	<tr key={clas.ClassroomID}>
 																		<td>
-																			<p>{clas.classRoomName}</p>
+																			<p>{clas.ClassroomName}</p>
 																		</td>
 																		<td> {new Date(clas.Date).toDateString()}</td>
 																		<td>
@@ -209,7 +209,7 @@ export default function CourseDetailStudent(props) {
 																			key={rs.ResourceID}
 																			className="justify-content-between p-3 border-bottom border-warning mw-100"
 																		>
-																			{rs.fileName}
+																			{rs.FileName}
 																		</td>
 																		<td>
 																			<span className="text-muted">
